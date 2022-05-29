@@ -1,4 +1,4 @@
-from math import sqrt
+from math import cos, sin, sqrt
 
 def dot(v1, v2):
     return v1.x * v2.x + v1.y * v2.y
@@ -32,3 +32,6 @@ class Vector:
 
     def normalized(self):
         return self / self.length()
+
+    def rotated(self, angle):
+        return Vector(cos(angle) * self.x - sin(angle) * self.y, sin(angle) * self.x + cos(angle) * self.y)

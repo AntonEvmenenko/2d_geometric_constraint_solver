@@ -1,5 +1,5 @@
 from scipy.optimize import minimize
-import numpy as np
+from copy import copy
 from constraints import COINCIDENCE, FIXED, constraint_function
 from geometry import Geometry
 from point import Point, distance_p2p
@@ -16,11 +16,6 @@ class Solver:
         self.geometry_changed_callback = geometry_changed_callback
 
         self.constraints = constraints
-
-        self.active_point = None
-        self.active_point_copy = Point(0, 0)
-
-        self.good_solution_vars = []
 
     def geometry_to_vars(self):
         vars = []
@@ -114,19 +109,17 @@ class Solver:
 
         for constraint in self.constraints:
             if constraint.type == FIXED:
-                point = constraint.entities[0]
-
-                if point in self.point_to_virtual_point:
-                    virtual_point = self.point_to_virtual_point[point]
-                    self.fixed_points.add(virtual_point)
-                else:
-                    self.fixed_points.add(point)
+                # point = constraint.entities[0]
+                for point in constraint.entities:
+                    if point in self.point_to_virtual_point:
+                        virtual_point = self.point_to_virtual_point[point]
+                        self.fixed_points.add(virtual_point)
+                    else:
+                        self.fixed_points.add(point)
 
     def solve(self, active_point):
         self.active_point = active_point
-
-        if not self.active_point is None:
-            self.active_point_copy.x, self.active_point_copy.y = active_point.x, active_point.y
+        self.active_point_copy = copy(active_point)
 
         self.create_virtual_points()
         self.create_fixed_points()
