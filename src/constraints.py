@@ -1,6 +1,9 @@
 from collections import Counter
+from tkinter import ARC
 from point import Point
 from segment import Segment
+from arc import Arc
+from line import Line, distance_p2l
 from vector import Vector, cross, dot
 
 COINCIDENCE         = 0
@@ -23,6 +26,7 @@ constraint_types = [
     FIXED,
     HORIZONTALITY,
     VERTICALITY,
+    TANGENCY,
 ]
 
 def parallel(*segments):
@@ -49,6 +53,12 @@ def verticality(*entities):
     assert points or segments
     return [(pair[0].x - pair[1].x) for pair in zip(entities[:-1], entities[1:])] if points else [(segment.p1.x - segment.p2.x) for segment in entities]
 
+def tangency(entity1, entity2):
+    assert any(isinstance(entity, Segment) for entity in (entity1, entity2)) and any(isinstance(entity, Arc) for entity in (entity1, entity2))
+    arc = entity1 if isinstance(entity1, Arc) else entity2
+    segment = entity1 if isinstance(entity1, Segment) else entity2
+    return [distance_p2l(arc.center, Line(segment.p1, segment.p2)) - arc.radius()]
+
 constraint_function = {
     COINCIDENCE:        None,
     PARALLELITY:        parallel,
@@ -58,6 +68,7 @@ constraint_function = {
     FIXED:              None,
     HORIZONTALITY:      horizontality,
     VERTICALITY:        verticality,
+    TANGENCY:           tangency,
 }
 
 MORE_THAN_ZERO  = 10000
@@ -72,6 +83,7 @@ constraint_requirements = {
     FIXED:              [(MORE_THAN_ZERO, Point)],
     HORIZONTALITY:      [(MORE_THAN_ZERO, Segment), (MORE_THAN_ONE, Point)],
     VERTICALITY:        [(MORE_THAN_ZERO, Segment), (MORE_THAN_ONE, Point)],
+    TANGENCY:           [(Arc, Segment)]
 }
 
 def get_available_constraints(entities):

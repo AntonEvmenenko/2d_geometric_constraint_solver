@@ -3,6 +3,7 @@ from copy import copy
 from constraints import COINCIDENCE, FIXED, constraint_function
 from geometry import Geometry
 from point import Point, distance_p2p
+from arc import Arc
 
 def point_to_vars(p: Point):
     return [p.x, p.y]
@@ -21,8 +22,8 @@ class Solver:
         vars = []
         processed_virtual_points = set()
 
-        for segment in self.geometry.segments:
-            for point in segment.points():
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            for point in entity.points():
                 if (point in self.fixed_points):
                     continue
                 elif (point in self.point_to_virtual_point):
@@ -43,8 +44,8 @@ class Solver:
 
         processed_virtual_points = set()
 
-        for segment in self.geometry.segments:
-            for point in segment.points():
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            for point in entity.points():
                 if (point in self.fixed_points):
                     continue
                 elif (point in self.point_to_virtual_point):
@@ -64,14 +65,20 @@ class Solver:
                     vars_length = len(point_to_vars(point))
                     point_from_vars(point, vars[position : position + vars_length])
                     position += vars_length
+        for arc in self.geometry.arcs:
+            arc.update_center()
 
     def f(self, x):
         self.geometry_from_vars(x)
 
-        if not self.active_point is None:
-            return distance_p2p(self.active_point, self.active_point_copy) ** 2
+        result = 0
 
-        return 0
+        if not self.active_point is None:
+            result = distance_p2p(self.active_point, self.active_point_copy) ** 2
+
+        # print (f'f: {result}')
+
+        return result
 
     def c(self, x):
         f = []
@@ -83,6 +90,8 @@ class Solver:
 
             if not function is None:
                 f += function(*constraint.entities)
+
+        # print (f'c: {f}')
 
         return f
 
@@ -126,13 +135,10 @@ class Solver:
 
         initial_guess = self.geometry_to_vars()
 
-        print (f'initial_guess ({len(initial_guess)}) = {initial_guess}')
+        # print (f'initial_guess ({len(initial_guess)}) = {initial_guess}')
 
-        # solution = optimize.root(self.f, initial_guess, method='lm', options={'maxiter': 800 * (len(initial_guess) + 1)})
-        # solution = minimize(self.f, initial_guess, method='BFGS')
         solution = minimize(self.f, initial_guess, method = 'SLSQP', constraints = {'type' : 'eq', 'fun': self.c})
-        
-        # good_solution = abs(solution.fun) < 1e-5
-        # print (f"good_solution = {good_solution}")
+
+        # print (solution)
 
         self.geometry_changed_callback()

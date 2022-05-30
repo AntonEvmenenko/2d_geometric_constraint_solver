@@ -5,4 +5,4 @@ class Geometry:
     def __init__(self):
         self.segments = []
         self.arcs = []
-        self.circles = []
+        # self.circles = []

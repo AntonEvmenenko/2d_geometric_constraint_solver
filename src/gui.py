@@ -3,11 +3,12 @@ import tkinter as tk
 from tkinter.font import NORMAL
 from constraint import Constraint
 from constraints import *
-from examples import example0
+from examples import examples
 from geometry import Geometry
 from point import Point, distance_p2p
 from segment import Segment, distance_p2s
-from math import pi
+from math import atan2, degrees, pi
+from arc import ARC_DIRECTION_CCW, ARC_DIRECTION_CW, Arc, distance_p2a
 
 USER_SELECTING_RADUIS = 5
 POINT_RADIUS = 4
@@ -27,7 +28,11 @@ class GUI(tk.Frame):
         self.canvas = tk.Canvas(self, width=800, height=600, background='white')
         self.canvas.grid(row=0, column=0, sticky="nsew")
         
-        self.segment_to_drawn_line = {}
+        # self.segment_to_drawn_line = {}
+        # self.arc_to_drawn_arc = {}
+
+        self.entity_to_drawn_entity = {}
+
         self.point_to_drawn_circle = {}
         self.entity_and_constraint_to_drawn_constraint_icon = {}
 
@@ -37,9 +42,8 @@ class GUI(tk.Frame):
         self.points_for_new_geometry = []
         self.adding_segment = False
         self.adding_arc = False
-        self.adding_circle = False
 
-        self.selected_entities = []
+        self.selected_entities = set()
 
         self.create_text_hint()
         self.create_side_menus()
@@ -59,7 +63,8 @@ class GUI(tk.Frame):
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
         file_menu = tk.Menu(menubar, tearoff="off")
-        file_menu.add_command(label='0', command=lambda: self.load_example(example0))
+        for i, example in enumerate(examples):
+            file_menu.add_command(label=f'{i}', command=lambda example = example: self.load_example(example))
         menubar.add_cascade(label="Examples", menu=file_menu)
 
     def create_side_menus(self):
@@ -126,8 +131,8 @@ class GUI(tk.Frame):
             tk.Button(self.menu_left, image = icon, command = command, relief = tk.SOLID, bg = "light gray", activebackground = "light gray").grid(row = row, column = 1, sticky = "n", pady = 2)
 
         create_menu_left_button(0, self.segment_icon, self.on_add_segment_button_clicked)
-        create_menu_left_button(1, self.arc_icon, None)
-        create_menu_left_button(2, self.circle_icon, None)
+        create_menu_left_button(1, self.arc_icon, self.on_add_arc_button_clicked)
+        # create_menu_left_button(2, self.circle_icon, None)
 
         def create_menu_right_constraint_button(row, constraint_type):
             button = tk.Button(self.menu_right, image = self.constraint_icon_32x32[constraint_type], \
@@ -143,6 +148,7 @@ class GUI(tk.Frame):
             EQUAL_LENGTH:       create_menu_right_constraint_button(4, EQUAL_LENGTH),
             VERTICALITY:        create_menu_right_constraint_button(5, VERTICALITY),
             HORIZONTALITY:      create_menu_right_constraint_button(6, HORIZONTALITY),
+            TANGENCY:           create_menu_right_constraint_button(7, TANGENCY),
         }
 
     def load_example(self, example):
@@ -154,27 +160,78 @@ class GUI(tk.Frame):
         for segment in self.geometry.segments:
             self.add_segment(segment)
 
-    def add_segment(self, segment):
+        for arc in self.geometry.arcs:
+            self.add_arc(arc)
+
+    def add_segment(self, segment: Segment):
         line = self.canvas.create_line(segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y, capstyle=tk.ROUND, joinstyle=tk.ROUND, width=2)
         self.canvas.tag_lower(line)
-        self.segment_to_drawn_line[segment] = line
+        self.entity_to_drawn_entity[segment] = line
 
-        self.point_to_drawn_circle[segment.p1] = self.canvas.create_oval(segment.p1.x - POINT_RADIUS, segment.p1.y - POINT_RADIUS, segment.p1.x + POINT_RADIUS, segment.p1.y + POINT_RADIUS, fill='blue', outline='blue')
-        self.point_to_drawn_circle[segment.p2] = self.canvas.create_oval(segment.p2.x - POINT_RADIUS, segment.p2.y - POINT_RADIUS, segment.p2.x + POINT_RADIUS, segment.p2.y + POINT_RADIUS, fill='blue', outline='blue')
+        def create_point(point):
+            return self.canvas.create_oval(point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS, fill='blue', outline='blue')
+
+        self.point_to_drawn_circle[segment.p1] = create_point(segment.p1)
+        self.point_to_drawn_circle[segment.p2] = create_point(segment.p2)
+
+    def calculate_arc_start_and_extent(self, arc: Arc):
+        center_p2 = Vector.from_two_points(arc.center, arc.p2)
+        center_p1 = Vector.from_two_points(arc.center, arc.p1)
+
+        start_angle = degrees(atan2(-center_p1.y, center_p1.x))
+        end_angle = degrees(atan2(-center_p2.y, center_p2.x))
+
+        if arc.direction == ARC_DIRECTION_CW and (end_angle > start_angle):
+            start_angle += 360
+        elif arc.direction == ARC_DIRECTION_CCW and (start_angle > end_angle):
+            end_angle += 360
+
+        extent = end_angle - start_angle
+
+        # print (f"start, end, extent: {int(start_angle), int(end_angle), int(extent)}")
+
+        return start_angle, extent
+
+    def add_arc(self, arc: Arc):
+        bb_coords = arc.bb_coords()
+
+        start, extent = self.calculate_arc_start_and_extent(arc)
+        # print (start, extent)
+
+        drawn_arc = self.canvas.create_arc(bb_coords, start = start, extent = extent, style=tk.ARC, width=3)
+        self.canvas.tag_lower(drawn_arc)
+        self.entity_to_drawn_entity[arc] = drawn_arc 
+
+        def create_point(point):
+            return self.canvas.create_oval(point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS, fill='blue', outline='blue')
+
+        self.point_to_drawn_circle[arc.p1] = create_point(arc.p1)
+        self.point_to_drawn_circle[arc.p2] = create_point(arc.p2)
+        self.point_to_drawn_circle[arc.center] = create_point(arc.center)
+
+        # bb = self.canvas.create_rectangle(bb_coords)
 
     def redraw_geometry(self):
+        # segments and arcs
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            for point in entity.points():
+                self.canvas.coords(self.point_to_drawn_circle[point], point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS)
+                self.canvas.itemconfig(self.point_to_drawn_circle[point], fill='blue', outline='blue')
+
+            line_color = "red" if entity in self.selected_entities else "black"
+            self.canvas.itemconfig(self.entity_to_drawn_entity[entity], fill=line_color)
+            if isinstance(entity, Arc):
+                self.canvas.itemconfig(self.entity_to_drawn_entity[entity], outline=line_color)
+
         # segments
         for segment in self.geometry.segments:
-            self.canvas.coords(self.segment_to_drawn_line[segment], segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y)
+            self.canvas.coords(self.entity_to_drawn_entity[segment], segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y)
 
-            self.canvas.coords(self.point_to_drawn_circle[segment.p1], segment.p1.x - POINT_RADIUS, segment.p1.y - POINT_RADIUS, segment.p1.x + POINT_RADIUS, segment.p1.y + POINT_RADIUS)
-            self.canvas.coords(self.point_to_drawn_circle[segment.p2], segment.p2.x - POINT_RADIUS, segment.p2.y - POINT_RADIUS, segment.p2.x + POINT_RADIUS, segment.p2.y + POINT_RADIUS)
-
-            line_color = "red" if segment in self.selected_entities else "black"
-            self.canvas.itemconfig(self.segment_to_drawn_line[segment], fill=line_color)
-
-            self.canvas.itemconfig(self.point_to_drawn_circle[segment.p1], fill='blue', outline='blue')
-            self.canvas.itemconfig(self.point_to_drawn_circle[segment.p2], fill='blue', outline='blue')
+        # arcs
+        for arc in self.geometry.arcs:
+            self.canvas.coords(self.entity_to_drawn_entity[arc], arc.bb_coords())
+            start, extent = self.calculate_arc_start_and_extent(arc)
+            self.canvas.itemconfig(self.entity_to_drawn_entity[arc], start = start, extent = extent)
 
         # selected points
         for selected_point in [entity for entity in self.selected_entities if isinstance(entity, Point)]:
@@ -184,35 +241,47 @@ class GUI(tk.Frame):
 
         self.update_constraint_icons()
 
-
     def on_left_button_pressed(self, event):
         cursor = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
         
-        if self.adding_segment:
+        if self.adding_segment or self.adding_arc:
             self.points_for_new_geometry.append(cursor)
 
             self.set_text_hint(f'Select point {len(self.points_for_new_geometry) + 1}')
 
-            if len(self.points_for_new_geometry) == 2:
+            if self.adding_segment and len(self.points_for_new_geometry) == 2:
                 segment = Segment(self.points_for_new_geometry[0], self.points_for_new_geometry[1])
                 self.geometry.segments.append(segment)
                 self.add_segment(segment)
                 self.new_geometry_added()
                 return
 
+            if self.adding_arc and len(self.points_for_new_geometry) == 3:
+                arc = Arc(self.points_for_new_geometry[0], self.points_for_new_geometry[2], self.points_for_new_geometry[1])
+                self.geometry.arcs.append(arc)
+                self.add_arc(arc)
+                self.new_geometry_added()
+                return
             return
 
-        for segment in self.geometry.segments:
-            for point in segment.points():
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            for point in entity.points():
                 if distance_p2p(point, cursor) < USER_SELECTING_RADUIS:
                     self.selected_point = point
-                    self.selected_entities.append(point)
+                    self.selected_entities.add(point)
                     self.check_constraints_requirements()
                     self.redraw_geometry()
                     return
-            # if segment.has_point(cursor):
-            if distance_p2s(cursor, segment) < USER_SELECTING_RADUIS:
-                self.selected_entities.append(segment)
+            if isinstance(entity, Segment) and distance_p2s(cursor, entity) < USER_SELECTING_RADUIS:
+                self.selected_entities.add(entity)
+                self.check_constraints_requirements()
+                self.redraw_geometry()
+                return
+
+            if isinstance(entity, Arc) and distance_p2a(cursor, entity) < USER_SELECTING_RADUIS:
+                if entity in self.selected_entities: # "double click"
+                    entity.invert_direction()
+                self.selected_entities.add(entity)
                 self.check_constraints_requirements()
                 self.redraw_geometry()
                 return
@@ -279,7 +348,6 @@ class GUI(tk.Frame):
 
         self.adding_segment = False
         self.adding_arc = False
-        self.adding_circle = False
         
         self.set_text_hint("")
 
@@ -289,8 +357,12 @@ class GUI(tk.Frame):
         self.set_text_hint('Select point 1')
         self.adding_segment = True
 
+    def on_add_arc_button_clicked(self):
+        self.set_text_hint('Select point 1')
+        self.adding_arc = True
+
     def on_add_constraint_button_clicked(self, constraint_type):
-        self.constraints.append(Constraint(copy(self.selected_entities), constraint_type))
+        self.constraints.append(Constraint(list(self.selected_entities), constraint_type))
 
         self.selected_entities.clear()
         self.constraints_changed_callback()
