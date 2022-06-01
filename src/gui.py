@@ -46,6 +46,7 @@ class GUI(tk.Frame):
         self.selected_entities = set()
 
         self.create_text_hint()
+        self.create_text_info()
         self.create_side_menus()
         self.create_top_menu()
         self.create_bindings()
@@ -56,15 +57,21 @@ class GUI(tk.Frame):
     def create_text_hint(self):
         self.text_hint = tk.Label(self, bd=0, background='white')
 
+    def create_text_info(self):
+        self.text_info = tk.Label(self, bd=0, background='white')
+
     def set_text_hint(self, text):
         self.text_hint.config(text = text)
+
+    def set_text_info(self, text):
+        self.text_info.config(text = text)
 
     def create_top_menu(self):
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
         file_menu = tk.Menu(menubar, tearoff="off")
-        for i, example in enumerate(examples):
-            file_menu.add_command(label=f'{i}', command=lambda example = example: self.load_example(example))
+        for example in examples:
+            file_menu.add_command(label=f'{example.__name__}', command=lambda example = example: self.load_example(example))
         menubar.add_cascade(label="Examples", menu=file_menu)
 
     def create_side_menus(self):
@@ -96,34 +103,34 @@ class GUI(tk.Frame):
         self.bind("<Configure>", self.on_resize)
 
     def create_icons(self):
-        self.segment_icon =             tk.PhotoImage(file = "icons/32x32/segment.png")
-        self.arc_icon =                 tk.PhotoImage(file = "icons/32x32/arc.png")
-        self.circle_icon =              tk.PhotoImage(file = "icons/32x32/circle.png")
+        self.segment_icon = tk.PhotoImage(file = "icons/32x32/segment.png")
+        self.arc_icon =     tk.PhotoImage(file = "icons/32x32/arc.png")
+        self.circle_icon =  tk.PhotoImage(file = "icons/32x32/circle.png")
 
         self.constraint_icon_32x32 = {
-            COINCIDENCE:        tk.PhotoImage(file = "icons/32x32/coincidence.png"),
-            PARALLELITY:        tk.PhotoImage(file = "icons/32x32/parallelity.png"),
-            PERPENDICULARITY:   tk.PhotoImage(file = "icons/32x32/perpendicularity.png"),
-            EQUAL_LENGTH:       tk.PhotoImage(file = "icons/32x32/equal_length.png"),
-            LENGTH:             tk.PhotoImage(file = "icons/32x32/length.png"),
-            FIXED:              tk.PhotoImage(file = "icons/32x32/fixed.png"),
-            HORIZONTALITY:      tk.PhotoImage(file = "icons/32x32/horizontality.png"),
-            VERTICALITY:        tk.PhotoImage(file = "icons/32x32/verticality.png"),
-            TANGENCY:           tk.PhotoImage(file = "icons/32x32/tangency.png"),
-            CONCENTRICITY:      tk.PhotoImage(file = "icons/32x32/concentricity.png"),
+            COINCIDENCE:            tk.PhotoImage(file = "icons/32x32/coincidence.png"),
+            PARALLELITY:            tk.PhotoImage(file = "icons/32x32/parallelity.png"),
+            PERPENDICULARITY:       tk.PhotoImage(file = "icons/32x32/perpendicularity.png"),
+            EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/32x32/equal_length.png"),
+            LENGTH:                 tk.PhotoImage(file = "icons/32x32/length.png"),
+            FIXED:                  tk.PhotoImage(file = "icons/32x32/fixed.png"),
+            HORIZONTALITY:          tk.PhotoImage(file = "icons/32x32/horizontality.png"),
+            VERTICALITY:            tk.PhotoImage(file = "icons/32x32/verticality.png"),
+            TANGENCY:               tk.PhotoImage(file = "icons/32x32/tangency.png"),
+            CONCENTRICITY:          tk.PhotoImage(file = "icons/32x32/concentricity.png"),
         }
 
         self.constraint_icon_20x20 = {
-            COINCIDENCE:        tk.PhotoImage(file = "icons/20x20/coincidence.png"),
-            PARALLELITY:        tk.PhotoImage(file = "icons/20x20/parallelity.png"),
-            PERPENDICULARITY:   tk.PhotoImage(file = "icons/20x20/perpendicularity.png"),
-            EQUAL_LENGTH:       tk.PhotoImage(file = "icons/20x20/equal_length.png"),
-            LENGTH:             tk.PhotoImage(file = "icons/20x20/length.png"),
-            FIXED:              tk.PhotoImage(file = "icons/20x20/fixed.png"),
-            HORIZONTALITY:      tk.PhotoImage(file = "icons/20x20/horizontality.png"),
-            VERTICALITY:        tk.PhotoImage(file = "icons/20x20/verticality.png"),
-            TANGENCY:           tk.PhotoImage(file = "icons/20x20/tangency.png"),
-            CONCENTRICITY:      tk.PhotoImage(file = "icons/20x20/concentricity.png"),
+            COINCIDENCE:            tk.PhotoImage(file = "icons/20x20/coincidence.png"),
+            PARALLELITY:            tk.PhotoImage(file = "icons/20x20/parallelity.png"),
+            PERPENDICULARITY:       tk.PhotoImage(file = "icons/20x20/perpendicularity.png"),
+            EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/20x20/equal_length.png"),
+            LENGTH:                 tk.PhotoImage(file = "icons/20x20/length.png"),
+            FIXED:                  tk.PhotoImage(file = "icons/20x20/fixed.png"),
+            HORIZONTALITY:          tk.PhotoImage(file = "icons/20x20/horizontality.png"),
+            VERTICALITY:            tk.PhotoImage(file = "icons/20x20/verticality.png"),
+            TANGENCY:               tk.PhotoImage(file = "icons/20x20/tangency.png"),
+            CONCENTRICITY:          tk.PhotoImage(file = "icons/20x20/concentricity.png"),
         }
 
     def create_buttons(self):
@@ -141,14 +148,14 @@ class GUI(tk.Frame):
             return button
 
         self.constraint_button = {
-            COINCIDENCE:        create_menu_right_constraint_button(0, COINCIDENCE),
-            FIXED:              create_menu_right_constraint_button(1, FIXED),
-            PERPENDICULARITY:   create_menu_right_constraint_button(2, PERPENDICULARITY),
-            PARALLELITY:        create_menu_right_constraint_button(3, PARALLELITY),
-            EQUAL_LENGTH:       create_menu_right_constraint_button(4, EQUAL_LENGTH),
-            VERTICALITY:        create_menu_right_constraint_button(5, VERTICALITY),
-            HORIZONTALITY:      create_menu_right_constraint_button(6, HORIZONTALITY),
-            TANGENCY:           create_menu_right_constraint_button(7, TANGENCY),
+            COINCIDENCE:            create_menu_right_constraint_button(0, COINCIDENCE),
+            FIXED:                  create_menu_right_constraint_button(1, FIXED),
+            PERPENDICULARITY:       create_menu_right_constraint_button(2, PERPENDICULARITY),
+            PARALLELITY:            create_menu_right_constraint_button(3, PARALLELITY),
+            EQUAL_LENGTH_OR_RADIUS: create_menu_right_constraint_button(4, EQUAL_LENGTH_OR_RADIUS),
+            VERTICALITY:            create_menu_right_constraint_button(5, VERTICALITY),
+            HORIZONTALITY:          create_menu_right_constraint_button(6, HORIZONTALITY),
+            TANGENCY:               create_menu_right_constraint_button(7, TANGENCY),
         }
 
     def load_example(self, example):
@@ -175,20 +182,18 @@ class GUI(tk.Frame):
         self.point_to_drawn_circle[segment.p2] = create_point(segment.p2)
 
     def calculate_arc_start_and_extent(self, arc: Arc):
-        center_p2 = Vector.from_two_points(arc.center, arc.p2)
-        center_p1 = Vector.from_two_points(arc.center, arc.p1)
+        arc_center = arc.center()
+
+        center_p2 = Vector.from_two_points(arc_center, arc.p2)
+        center_p1 = Vector.from_two_points(arc_center, arc.p1)
 
         start_angle = degrees(atan2(-center_p1.y, center_p1.x))
         end_angle = degrees(atan2(-center_p2.y, center_p2.x))
 
-        if arc.direction == ARC_DIRECTION_CW and (end_angle > start_angle):
+        if start_angle < end_angle:
             start_angle += 360
-        elif arc.direction == ARC_DIRECTION_CCW and (start_angle > end_angle):
-            end_angle += 360
 
         extent = end_angle - start_angle
-
-        # print (f"start, end, extent: {int(start_angle), int(end_angle), int(extent)}")
 
         return start_angle, extent
 
@@ -202,12 +207,12 @@ class GUI(tk.Frame):
         self.canvas.tag_lower(drawn_arc)
         self.entity_to_drawn_entity[arc] = drawn_arc 
 
-        def create_point(point):
-            return self.canvas.create_oval(point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS, fill='blue', outline='blue')
+        def create_point(point, color = 'blue'):
+            return self.canvas.create_oval(point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS, fill=color, outline=color)
 
-        self.point_to_drawn_circle[arc.p1] = create_point(arc.p1)
-        self.point_to_drawn_circle[arc.p2] = create_point(arc.p2)
-        self.point_to_drawn_circle[arc.center] = create_point(arc.center)
+        self.point_to_drawn_circle[arc.p1] = create_point(arc.p1, 'red')
+        self.point_to_drawn_circle[arc.p2] = create_point(arc.p2, 'red')
+        # self.point_to_drawn_circle[arc.center] = create_point(arc.center)
 
         # bb = self.canvas.create_rectangle(bb_coords)
 
@@ -240,6 +245,7 @@ class GUI(tk.Frame):
             self.canvas.tag_raise(circle)
 
         self.update_constraint_icons()
+        self.set_text_info(f'e: {len(self.geometry.segments) + len(self.geometry.arcs)} | c: {len(self.constraints)}')
 
     def on_left_button_pressed(self, event):
         cursor = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
@@ -325,12 +331,13 @@ class GUI(tk.Frame):
 
     def on_resize(self, event):
         # TODO: refactor
-        self.canvas.config(width=event.width - 4, height=event.height - 4)
+        self.canvas.config(width = event.width - 4, height = event.height - 4)
         
         self.menu_left.place(x = 10, y = 10)
         self.menu_right.place(x = event.width - 45, y = 10)
 
         self.text_hint.place(x = 10, y = event.height - 25)
+        self.text_info.place(x = event.width - 70, y = event.height - 25)
 
     # def on_zoom(self,event):
     #     factor = 1.1 if (event.delta > 0) else 0.9
@@ -376,31 +383,45 @@ class GUI(tk.Frame):
 
     def update_constraint_icons(self):
         # constraint icons for segments
-        for segment in self.geometry.segments:
+        for entity in (self.geometry.segments + self.geometry.arcs):
             drawn_icons = []
 
             for constraint in self.constraints:
-                if segment in constraint.entities:
-                    if not (segment, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
-                        self.entity_and_constraint_to_drawn_constraint_icon[(segment, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon_20x20[constraint.type], 20)
-                    drawn_icons.append(self.entity_and_constraint_to_drawn_constraint_icon[(segment, constraint)])
+                if entity in constraint.entities:
+                    if not (entity, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
+                        self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon_20x20[constraint.type], 20)
+                    drawn_icons.append(self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)])
 
             normal_spacing = 20
             tangent_spacing = 30
 
-            tangent_offset = max(tangent_spacing * (len(drawn_icons) - 1), 0) / 2
+            if isinstance(entity, Segment):
+                tangent_offset = max(tangent_spacing * (len(drawn_icons) - 1), 0) / 2
 
-            p1_p2 = Vector.from_two_points(segment.p1, segment.p2)
-            p1_p2_unit = p1_p2.normalized()
-            center_point = segment.p1 + p1_p2 / 2
-            n = Vector(p1_p2_unit.y, -p1_p2_unit.x)
+                p1_p2 = Vector.from_two_points(entity.p1, entity.p2)
+                p1_p2_unit = p1_p2.normalized()
+                center_point = entity.p1 + p1_p2 / 2
+                n = Vector(p1_p2_unit.y, -p1_p2_unit.x)
 
-            for i, drawn_icon in enumerate(drawn_icons):
-                drawn_icon.moveto(center_point + n * normal_spacing + p1_p2_unit * (-tangent_offset) + p1_p2_unit * (i * tangent_spacing))
+                for i, drawn_icon in enumerate(drawn_icons):
+                    drawn_icon.moveto(center_point + n * normal_spacing + p1_p2_unit * (-tangent_offset) + p1_p2_unit * (i * tangent_spacing))
+
+            elif isinstance(entity, Arc):
+                center = entity.center()
+                radius = entity.radius()
+                middle = entity.middle_point()
+
+                c_m_unit = Vector.from_two_points(center, middle).normalized()
+
+                delta_angle = tangent_spacing / (radius + normal_spacing)
+                angle_offset = max(delta_angle * (len(drawn_icons) - 1), 0) / 2
+
+                for i, drawn_icon in enumerate(drawn_icons):
+                    drawn_icon.moveto(center + (c_m_unit * (radius + normal_spacing)).rotated(-angle_offset + delta_angle * i))
 
         # constraint icons for points
-        for segment in self.geometry.segments:
-            for point in segment.points():
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            for point in entity.points():
                 drawn_icons = []
 
                 for constraint in self.constraints:

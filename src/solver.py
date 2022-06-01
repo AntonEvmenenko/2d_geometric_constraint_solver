@@ -3,7 +3,7 @@ from copy import copy
 from constraints import COINCIDENCE, FIXED, constraint_function
 from geometry import Geometry
 from point import Point, distance_p2p
-from arc import Arc
+from segment import Segment
 
 def point_to_vars(p: Point):
     return [p.x, p.y]
@@ -17,6 +17,8 @@ class Solver:
         self.geometry_changed_callback = geometry_changed_callback
 
         self.constraints = constraints
+
+        self.inactive_constraints = set()
 
     def geometry_to_vars(self):
         vars = []
@@ -36,6 +38,9 @@ class Solver:
                     processed_virtual_points.add(virtual_point)
                 else:
                     vars += point_to_vars(point)
+
+        for arc in self.geometry.arcs:
+            vars.append(arc.d)
 
         return vars
 
@@ -65,8 +70,10 @@ class Solver:
                     vars_length = len(point_to_vars(point))
                     point_from_vars(point, vars[position : position + vars_length])
                     position += vars_length
+
         for arc in self.geometry.arcs:
-            arc.update_center()
+            arc.d = vars[position]
+            position += 1
 
     def f(self, x):
         self.geometry_from_vars(x)
@@ -74,7 +81,7 @@ class Solver:
         result = 0
 
         if not self.active_point is None:
-            result = distance_p2p(self.active_point, self.active_point_copy) ** 2
+            result = distance_p2p(self.active_point, self.active_point_copy)
 
         # print (f'f: {result}')
 
@@ -86,11 +93,18 @@ class Solver:
         self.geometry_from_vars(x)
 
         for constraint in self.constraints:
+            # ignore all the constraints that do not depend on variables; it means they should be defined based on fixed points only
+            if constraint in self.inactive_constraints:
+                continue
+
             function = constraint_function[constraint.type]
 
-            if not function is None:
-                f += function(*constraint.entities)
+            if function is None:
+                continue
 
+            f += function(*constraint.entities)
+
+        # print (f'x: {x}')
         # print (f'c: {f}')
 
         return f
@@ -118,13 +132,29 @@ class Solver:
 
         for constraint in self.constraints:
             if constraint.type == FIXED:
-                # point = constraint.entities[0]
                 for point in constraint.entities:
                     if point in self.point_to_virtual_point:
                         virtual_point = self.point_to_virtual_point[point]
                         self.fixed_points.add(virtual_point)
                     else:
                         self.fixed_points.add(point)
+
+    def detect_inactive_constraints(self):
+        def is_fixed_entity(entity):
+            if isinstance(entity, Point):
+                return entity in self.fixed_points or self.point_to_virtual_point.get(entity) in self.fixed_points
+            elif isinstance(entity, Segment):
+                return is_fixed_entity(entity.p1) and is_fixed_entity(entity.p2)
+            else:
+                return False
+
+        for constraint in self.constraints:
+            if constraint in self.inactive_constraints:
+                continue
+            if constraint_function[constraint.type] is None:
+                continue
+            if all(is_fixed_entity(entity) for entity in constraint.entities):
+                self.inactive_constraints.add(constraint)
 
     def solve(self, active_point):
         self.active_point = active_point
@@ -135,9 +165,11 @@ class Solver:
 
         initial_guess = self.geometry_to_vars()
 
+        self.detect_inactive_constraints()
+
         # print (f'initial_guess ({len(initial_guess)}) = {initial_guess}')
 
-        solution = minimize(self.f, initial_guess, method = 'SLSQP', constraints = {'type' : 'eq', 'fun': self.c})
+        solution = minimize(self.f, initial_guess, method = 'SLSQP', constraints = {'type' : 'eq', 'fun': self.c}, options = {'eps' : 1e-05})
 
         # print (solution)
 

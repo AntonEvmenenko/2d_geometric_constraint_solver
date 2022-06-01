@@ -36,8 +36,10 @@ class Vector:
     def rotated(self, angle):
         return Vector(cos(angle) * self.x - sin(angle) * self.y, sin(angle) * self.x + cos(angle) * self.y)
 
-    def rotated90cw(self):
+    # for left-handed coordinate system
+    def rotated90ccw(self):
         return Vector(self.y, -self.x)
 
-    def rotated90ccw(self):
+    # for left-handed coordinate system
+    def rotated90cw(self):
         return Vector(-self.y, self.x)
