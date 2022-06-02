@@ -39,3 +39,5 @@ def split(icons_set_filename, icon_size, grid_size, output_folder):
 
 split(icons_set_filename = "icons/icons_set_128x128.png", icon_size = 32, grid_size = 5, output_folder = "icons/32x32/")
 split(icons_set_filename = "icons/icons_set_128x128.png", icon_size = 20, grid_size = 5, output_folder = "icons/20x20/")
+split(icons_set_filename = "icons/icons_set_128x128.png", icon_size = 64, grid_size = 5, output_folder = "icons/64x64/")
+split(icons_set_filename = "icons/icons_set_128x128.png", icon_size = 128, grid_size = 5, output_folder = "icons/128x128/")

@@ -9,8 +9,13 @@ from math import atan2, degrees, pi
 from geometric_primitives.arc import Arc, distance_p2a
 from gui.constraint_icon import ConstraintIcon
 
-USER_SELECTING_RADUIS = 5
-POINT_RADIUS = 4
+USER_SELECTING_RADUIS   = 5
+
+BUTTON_ICON_SIZE        = 64
+CONSTRAINT_ICON_SIZE    = 32
+CONSTRAINT_ICON_SPACING = 40
+LINE_TICKNESS           = 6
+POINT_RADIUS            = 8
 
 class GUI(tk.Frame):
     def __init__(self, root, geometry: Geometry, geometry_changed_callback, constraints, constraints_changed_callback):
@@ -24,7 +29,7 @@ class GUI(tk.Frame):
         self.constraints = constraints
         self.constraints_changed_callback = constraints_changed_callback
 
-        self.canvas = tk.Canvas(self, width=800, height=600, background='white')
+        self.canvas = tk.Canvas(self, width=1920, height=1080, background='white')
         self.canvas.grid(row=0, column=0, sticky="nsew")
 
         self.entity_to_drawn_entity = {}
@@ -101,35 +106,32 @@ class GUI(tk.Frame):
         self.root.bind("<KeyPress>", self.on_key_press)
 
     def create_icons(self):
-        self.segment_icon = tk.PhotoImage(file = "icons/32x32/segment.png")
-        self.arc_icon =     tk.PhotoImage(file = "icons/32x32/arc.png")
-        self.circle_icon =  tk.PhotoImage(file = "icons/32x32/circle.png")
+        self.segment_icon = tk.PhotoImage(file = f"icons/{BUTTON_ICON_SIZE}x{BUTTON_ICON_SIZE}/segment.png")
+        self.arc_icon =     tk.PhotoImage(file = f"icons/{BUTTON_ICON_SIZE}x{BUTTON_ICON_SIZE}/arc.png")
+        self.circle_icon =  tk.PhotoImage(file = f"icons/{BUTTON_ICON_SIZE}x{BUTTON_ICON_SIZE}/circle.png")
 
-        self.constraint_icon_32x32 = {
-            CONSTRAINT_TYPES.COINCIDENCE:            tk.PhotoImage(file = "icons/32x32/coincidence.png"),
-            CONSTRAINT_TYPES.PARALLELITY:            tk.PhotoImage(file = "icons/32x32/parallelity.png"),
-            CONSTRAINT_TYPES.PERPENDICULARITY:       tk.PhotoImage(file = "icons/32x32/perpendicularity.png"),
-            CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/32x32/equal_length.png"),
-            CONSTRAINT_TYPES.LENGTH:                 tk.PhotoImage(file = "icons/32x32/length.png"),
-            CONSTRAINT_TYPES.FIXED:                  tk.PhotoImage(file = "icons/32x32/fixed.png"),
-            CONSTRAINT_TYPES.HORIZONTALITY:          tk.PhotoImage(file = "icons/32x32/horizontality.png"),
-            CONSTRAINT_TYPES.VERTICALITY:            tk.PhotoImage(file = "icons/32x32/verticality.png"),
-            CONSTRAINT_TYPES.TANGENCY:               tk.PhotoImage(file = "icons/32x32/tangency.png"),
-            CONSTRAINT_TYPES.CONCENTRICITY:          tk.PhotoImage(file = "icons/32x32/concentricity.png"),
+        icon_sizes = [20, 32, 64, 128]
+
+        self.constraint_icon = {}
+
+        icon_file_name = {
+            CONSTRAINT_TYPES.COINCIDENCE:            "coincidence",
+            CONSTRAINT_TYPES.PARALLELITY:            "parallelity",
+            CONSTRAINT_TYPES.PERPENDICULARITY:       "perpendicularity",
+            CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS: "equal_length",
+            CONSTRAINT_TYPES.LENGTH:                 "length",
+            CONSTRAINT_TYPES.FIXED:                  "fixed",
+            CONSTRAINT_TYPES.HORIZONTALITY:          "horizontality",
+            CONSTRAINT_TYPES.VERTICALITY:            "verticality",
+            CONSTRAINT_TYPES.TANGENCY:               "tangency",
+            CONSTRAINT_TYPES.CONCENTRICITY:          "concentricity",
         }
 
-        self.constraint_icon_20x20 = {
-            CONSTRAINT_TYPES.COINCIDENCE:            tk.PhotoImage(file = "icons/20x20/coincidence.png"),
-            CONSTRAINT_TYPES.PARALLELITY:            tk.PhotoImage(file = "icons/20x20/parallelity.png"),
-            CONSTRAINT_TYPES.PERPENDICULARITY:       tk.PhotoImage(file = "icons/20x20/perpendicularity.png"),
-            CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/20x20/equal_length.png"),
-            CONSTRAINT_TYPES.LENGTH:                 tk.PhotoImage(file = "icons/20x20/length.png"),
-            CONSTRAINT_TYPES.FIXED:                  tk.PhotoImage(file = "icons/20x20/fixed.png"),
-            CONSTRAINT_TYPES.HORIZONTALITY:          tk.PhotoImage(file = "icons/20x20/horizontality.png"),
-            CONSTRAINT_TYPES.VERTICALITY:            tk.PhotoImage(file = "icons/20x20/verticality.png"),
-            CONSTRAINT_TYPES.TANGENCY:               tk.PhotoImage(file = "icons/20x20/tangency.png"),
-            CONSTRAINT_TYPES.CONCENTRICITY:          tk.PhotoImage(file = "icons/20x20/concentricity.png"),
-        }
+        for icon_size in icon_sizes:
+            self.constraint_icon[icon_size] = {}
+
+            for constraint_type in CONSTRAINT_TYPES:
+                self.constraint_icon[icon_size][constraint_type] = tk.PhotoImage(file = f"icons/{icon_size}x{icon_size}/{icon_file_name[constraint_type]}.png")
 
     def create_buttons(self):
         def create_menu_left_button(row, icon, command):
@@ -140,7 +142,7 @@ class GUI(tk.Frame):
         # create_menu_left_button(2, self.circle_icon, None)
 
         def create_menu_right_constraint_button(row, constraint_type):
-            button = tk.Button(self.menu_right, image = self.constraint_icon_32x32[constraint_type], \
+            button = tk.Button(self.menu_right, image = self.constraint_icon[BUTTON_ICON_SIZE][constraint_type], \
                 command = lambda: self.on_add_constraint_button_clicked(constraint_type), state=tk.DISABLED, relief = tk.SOLID, bg = "light gray", activebackground = "light gray")
             button.grid(row = row, column = 1, sticky="n", pady = 2)
             return button
@@ -277,12 +279,13 @@ class GUI(tk.Frame):
 
     def on_resize(self, event):
         # TODO: refactor
-        self.canvas.config(width = event.width - 4, height = event.height - 4)
+        self.canvas.config(width = event.width - 2, height = event.height - 2)
         
         self.menu_left.place(x = 10, y = 10)
-        self.menu_right.place(x = event.width - 45, y = 10)
+        self.menu_right.place(x = event.width - BUTTON_ICON_SIZE - 15, y = 10)
 
         self.text_hint.place(x = 10, y = event.height - 25)
+        # pass
 
     # screen buttons handlers
 
@@ -310,7 +313,7 @@ class GUI(tk.Frame):
         self.entity_to_drawn_entity.pop(point, None)
 
     def add_drawn_segment(self, segment: Segment):
-        line = self.canvas.create_line(segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y, capstyle=tk.ROUND, joinstyle=tk.ROUND, width=2)
+        line = self.canvas.create_line(segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y, capstyle=tk.ROUND, joinstyle=tk.ROUND, width=LINE_TICKNESS)
         self.canvas.tag_lower(line)
         self.entity_to_drawn_entity[segment] = line
 
@@ -344,7 +347,7 @@ class GUI(tk.Frame):
 
         start, extent = self.calculate_arc_start_and_extent(arc)
 
-        drawn_arc = self.canvas.create_arc(bb_coords, start = start, extent = extent, style=tk.ARC, width=2)
+        drawn_arc = self.canvas.create_arc(bb_coords, start = start, extent = extent, style=tk.ARC, width=LINE_TICKNESS)
         self.canvas.tag_lower(drawn_arc)
         self.entity_to_drawn_entity[arc] = drawn_arc 
 
@@ -421,14 +424,14 @@ class GUI(tk.Frame):
         for entity in (self.geometry.segments + self.geometry.arcs):
             if entity in constraint.entities:
                 if not (entity, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
-                    self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon_20x20[constraint.type], 20)
+                    self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type], CONSTRAINT_ICON_SIZE)
 
             for point in entity.points():
                 if point in constraint.entities:
                     if not (point, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
                         exists_already = (constraint.type == CONSTRAINT_TYPES.COINCIDENCE) and any(c is constraint for (p, c) in self.entity_and_constraint_to_drawn_constraint_icon)
                         if not exists_already:
-                            self.entity_and_constraint_to_drawn_constraint_icon[(point, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon_20x20[constraint.type], 20)
+                            self.entity_and_constraint_to_drawn_constraint_icon[(point, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type], CONSTRAINT_ICON_SIZE)
 
     def remove_constraint_icon(self, constraint):
         def remove_icon(entity):
@@ -462,8 +465,8 @@ class GUI(tk.Frame):
                 if entity in constraint.entities:
                     drawn_icons.append(self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)])
 
-            normal_spacing = 20
-            tangent_spacing = 30
+            normal_spacing = CONSTRAINT_ICON_SPACING
+            tangent_spacing = normal_spacing + 10
 
             if isinstance(entity, Segment):
                 tangent_offset = max(tangent_spacing * (len(drawn_icons) - 1), 0) / 2
@@ -500,7 +503,7 @@ class GUI(tk.Frame):
                             drawn_icons.append(self.entity_and_constraint_to_drawn_constraint_icon[(point, constraint)])
 
                 icons_in_first_layer = 5
-                first_layer_radius = 25
+                first_layer_radius = CONSTRAINT_ICON_SPACING
                 layer = 0
 
                 # number of icons in all layers from 0 to layer
