@@ -108,3 +108,12 @@ def get_available_constraints(entities):
                 available_constraints.add(constraint_type)
 
     return available_constraints
+
+def get_useless_constraints(constraints, entities_to_be_removed):
+    useless_constraints = set()
+
+    for constraint in constraints:
+        if not constraint.type in get_available_constraints(set(constraint.entities) - set(entities_to_be_removed)):
+            useless_constraints.add(constraint)
+
+    return useless_constraints

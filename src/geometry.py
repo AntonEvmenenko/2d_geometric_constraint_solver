@@ -1,3 +1,4 @@
+from arc import Arc
 from point import Point
 from segment import Segment
 
@@ -6,3 +7,13 @@ class Geometry:
         self.segments = []
         self.arcs = []
         # self.circles = []
+
+    def clear(self):
+        self.segments = []
+        self.arcs = []
+
+    def remove_entity(self, entity):
+        if isinstance(entity, Segment):
+            self.segments.remove(entity)
+        elif isinstance(entity, Arc):
+            self.arcs.remove(entity)

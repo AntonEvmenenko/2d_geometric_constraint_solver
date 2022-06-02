@@ -4,7 +4,13 @@ from point import Point
 from segment import Segment
 from arc import Arc
 
-def example0(geometry, constraints):
+def clear_geometry_and_constraints(geometry, constraints):
+    geometry.clear()
+    constraints.clear()
+
+def Lines(geometry, constraints):
+    clear_geometry_and_constraints(geometry, constraints)
+
     geometry.segments = [
         Segment(Point(300, 300), Point(500, 300)),
         Segment(Point(500, 300), Point(400, 200)),
@@ -14,7 +20,6 @@ def example0(geometry, constraints):
         Segment(Point(600, 250), Point(400, 200)),
     ]
 
-    constraints.clear()
     constraints += [
         Constraint([geometry.segments[0].p1, geometry.segments[2].p2], constraint_types.COINCIDENCE),
         Constraint([geometry.segments[0].p2, geometry.segments[1].p1], constraint_types.COINCIDENCE),
@@ -32,7 +37,9 @@ def example0(geometry, constraints):
         Constraint([geometry.segments[0].p2], constraint_types.FIXED),
     ]
 
-def example1(geometry, constraints):
+def CutSlot(geometry, constraints):
+    clear_geometry_and_constraints(geometry, constraints)
+
     geometry.segments = [
         Segment(Point(300, 200), Point(300, 400)),
         Segment(Point(300, 400), Point(500, 400)),
@@ -43,7 +50,6 @@ def example1(geometry, constraints):
         Arc(Point(300, 200), Point(500, 200), Point(400, 100))
     ]
 
-    constraints.clear()
     constraints += [
         Constraint([geometry.segments[0], geometry.arcs[0]], constraint_types.TANGENCY),
         Constraint([geometry.segments[2], geometry.arcs[0]], constraint_types.TANGENCY),
@@ -55,7 +61,9 @@ def example1(geometry, constraints):
         Constraint([geometry.segments[1].p2, geometry.segments[2].p1], constraint_types.COINCIDENCE),
     ]
 
-def slot(geometry, constraints):
+def Slot(geometry, constraints):
+    clear_geometry_and_constraints(geometry, constraints)
+
     geometry.segments = [
         Segment(Point(300, 200), Point(300, 400)),
         Segment(Point(500, 400), Point(500, 200)),
@@ -66,7 +74,6 @@ def slot(geometry, constraints):
         Arc(Point(500, 400), Point(300, 400), Point(400, 500)),
     ]
 
-    constraints.clear()
     constraints += [
         Constraint([geometry.segments[0], geometry.arcs[0]], constraint_types.TANGENCY),
         Constraint([geometry.segments[0], geometry.arcs[1]], constraint_types.TANGENCY),
@@ -81,7 +88,7 @@ def slot(geometry, constraints):
     ]
 
 examples = [
-    example0,
-    example1,
-    slot,
+    Lines,
+    CutSlot,
+    Slot,
 ]

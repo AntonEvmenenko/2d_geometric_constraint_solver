@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from scipy.optimize import minimize
 from copy import copy
 from constraints import constraint_function, constraint_types
@@ -11,6 +12,10 @@ def point_to_vars(p: Point):
 def point_from_vars(p: Point, vars):
     p.x, p.y = vars
 
+class SOLVER_TYPE(Enum):
+    SLSQP   = auto()
+    IPOPT   = auto()
+
 class Solver:
     def __init__(self, geometry: Geometry, geometry_changed_callback, constraints):
         self.geometry = geometry
@@ -19,6 +24,8 @@ class Solver:
         self.constraints = constraints
 
         self.inactive_constraints = set()
+
+        self.solver_type = SOLVER_TYPE.SLSQP
 
     def geometry_to_vars(self):
         vars = []
@@ -165,12 +172,19 @@ class Solver:
 
         initial_guess = self.geometry_to_vars()
 
+        if len(initial_guess) == 0:
+            return
+
         self.detect_inactive_constraints()
 
         # print (f'initial_guess ({len(initial_guess)}) = {initial_guess}')
 
-        solution = minimize(self.f, initial_guess, method = 'SLSQP', constraints = {'type' : 'eq', 'fun': self.c}, options = {'eps' : 1e-05})
+        solution = None
 
-        # print (solution)
+        if self.solver_type == SOLVER_TYPE.SLSQP:
+            solution = minimize(self.f, initial_guess, method = 'SLSQP', constraints = {'type' : 'eq', 'fun': self.c}, options = {'eps' : 1e-05})
+            # print (solution)
+        elif self.solver_type == SOLVER_TYPE.IPOPT:
+            pass
 
         self.geometry_changed_callback()
