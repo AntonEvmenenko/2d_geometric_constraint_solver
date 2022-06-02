@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from scipy.optimize import minimize
 from copy import copy
-from constraints import constraint_function, constraint_types
+from constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPES
 from geometry import Geometry
 from point import Point, distance_p2p
 from segment import Segment
@@ -104,7 +104,7 @@ class Solver:
             if constraint in self.inactive_constraints:
                 continue
 
-            function = constraint_function[constraint.type]
+            function = CONSTRAINT_FUNCTION[constraint.type]
 
             if function is None:
                 continue
@@ -120,7 +120,7 @@ class Solver:
         self.point_to_virtual_point = {}
 
         for constraint in self.constraints:
-            if constraint.type == constraint_types.COINCIDENCE:
+            if constraint.type == CONSTRAINT_TYPES.COINCIDENCE:
                 virtual_point = Point(constraint.entities[0].x, constraint.entities[0].y)
 
                 for point in constraint.entities:
@@ -138,7 +138,7 @@ class Solver:
         self.fixed_points = set()
 
         for constraint in self.constraints:
-            if constraint.type == constraint_types.FIXED:
+            if constraint.type == CONSTRAINT_TYPES.FIXED:
                 for point in constraint.entities:
                     if point in self.point_to_virtual_point:
                         virtual_point = self.point_to_virtual_point[point]
@@ -158,7 +158,7 @@ class Solver:
         for constraint in self.constraints:
             if constraint in self.inactive_constraints:
                 continue
-            if constraint_function[constraint.type] is None:
+            if CONSTRAINT_FUNCTION[constraint.type] is None:
                 continue
             if all(is_fixed_entity(entity) for entity in constraint.entities):
                 self.inactive_constraints.add(constraint)

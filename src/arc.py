@@ -7,7 +7,7 @@ from point import Point, distance_p2p
 from line import Line, intersection_line_line
 from vector import Vector, cross, dot
 
-class direction(Enum):
+class DIRECTION(Enum):
     CW      = auto()
     CCW     = auto()
 
@@ -37,11 +37,11 @@ class Arc:
         center_p1 = Vector.from_two_points(center, self.p1)
         center_p = Vector.from_two_points(center, p)
 
-        dir = direction.CW if cross(center_p1, center_p) > 0 else direction.CCW
+        dir = DIRECTION.CW if cross(center_p1, center_p) > 0 else DIRECTION.CCW
 
-        if dir == direction.CCW:
+        if dir == DIRECTION.CCW:
             self.p1, self.p2 = self.p2, self.p1
-            dir = direction.CW
+            dir = DIRECTION.CW
 
         self.d = dot(Vector.from_two_points(p1_p2_segment_center, center), self.get_n())
 

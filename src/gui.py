@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter.font import NORMAL
 from constraint import Constraint
 from constraints import *
 from examples import examples
@@ -28,8 +27,6 @@ class GUI(tk.Frame):
         self.canvas.grid(row=0, column=0, sticky="nsew")
 
         self.entity_to_drawn_entity = {}
-
-        self.point_to_drawn_circle = {}
         self.entity_and_constraint_to_drawn_constraint_icon = {}
 
         self.selected_point = None
@@ -39,7 +36,7 @@ class GUI(tk.Frame):
         self.adding_segment = False
         self.adding_arc = False
 
-        # could be Segment, Arc, Point, Constraint
+        # could be Segment, Arc, Point or Constraint
         self.selected_entities = set()
 
         self.create_text_hint()
@@ -101,42 +98,35 @@ class GUI(tk.Frame):
 
         self.root.bind("<KeyPress>", self.on_key_press)
 
-    def on_key_press(self, event):
-        {
-            'Delete': self.delete_selected_entities,
-            's': self.on_add_segment_button_clicked,
-            'a': self.on_add_arc_button_clicked,
-        }.get(event.keysym, lambda : None)()
-
     def create_icons(self):
         self.segment_icon = tk.PhotoImage(file = "icons/32x32/segment.png")
         self.arc_icon =     tk.PhotoImage(file = "icons/32x32/arc.png")
         self.circle_icon =  tk.PhotoImage(file = "icons/32x32/circle.png")
 
         self.constraint_icon_32x32 = {
-            constraint_types.COINCIDENCE:            tk.PhotoImage(file = "icons/32x32/coincidence.png"),
-            constraint_types.PARALLELITY:            tk.PhotoImage(file = "icons/32x32/parallelity.png"),
-            constraint_types.PERPENDICULARITY:       tk.PhotoImage(file = "icons/32x32/perpendicularity.png"),
-            constraint_types.EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/32x32/equal_length.png"),
-            constraint_types.LENGTH:                 tk.PhotoImage(file = "icons/32x32/length.png"),
-            constraint_types.FIXED:                  tk.PhotoImage(file = "icons/32x32/fixed.png"),
-            constraint_types.HORIZONTALITY:          tk.PhotoImage(file = "icons/32x32/horizontality.png"),
-            constraint_types.VERTICALITY:            tk.PhotoImage(file = "icons/32x32/verticality.png"),
-            constraint_types.TANGENCY:               tk.PhotoImage(file = "icons/32x32/tangency.png"),
-            constraint_types.CONCENTRICITY:          tk.PhotoImage(file = "icons/32x32/concentricity.png"),
+            CONSTRAINT_TYPES.COINCIDENCE:            tk.PhotoImage(file = "icons/32x32/coincidence.png"),
+            CONSTRAINT_TYPES.PARALLELITY:            tk.PhotoImage(file = "icons/32x32/parallelity.png"),
+            CONSTRAINT_TYPES.PERPENDICULARITY:       tk.PhotoImage(file = "icons/32x32/perpendicularity.png"),
+            CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/32x32/equal_length.png"),
+            CONSTRAINT_TYPES.LENGTH:                 tk.PhotoImage(file = "icons/32x32/length.png"),
+            CONSTRAINT_TYPES.FIXED:                  tk.PhotoImage(file = "icons/32x32/fixed.png"),
+            CONSTRAINT_TYPES.HORIZONTALITY:          tk.PhotoImage(file = "icons/32x32/horizontality.png"),
+            CONSTRAINT_TYPES.VERTICALITY:            tk.PhotoImage(file = "icons/32x32/verticality.png"),
+            CONSTRAINT_TYPES.TANGENCY:               tk.PhotoImage(file = "icons/32x32/tangency.png"),
+            CONSTRAINT_TYPES.CONCENTRICITY:          tk.PhotoImage(file = "icons/32x32/concentricity.png"),
         }
 
         self.constraint_icon_20x20 = {
-            constraint_types.COINCIDENCE:            tk.PhotoImage(file = "icons/20x20/coincidence.png"),
-            constraint_types.PARALLELITY:            tk.PhotoImage(file = "icons/20x20/parallelity.png"),
-            constraint_types.PERPENDICULARITY:       tk.PhotoImage(file = "icons/20x20/perpendicularity.png"),
-            constraint_types.EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/20x20/equal_length.png"),
-            constraint_types.LENGTH:                 tk.PhotoImage(file = "icons/20x20/length.png"),
-            constraint_types.FIXED:                  tk.PhotoImage(file = "icons/20x20/fixed.png"),
-            constraint_types.HORIZONTALITY:          tk.PhotoImage(file = "icons/20x20/horizontality.png"),
-            constraint_types.VERTICALITY:            tk.PhotoImage(file = "icons/20x20/verticality.png"),
-            constraint_types.TANGENCY:               tk.PhotoImage(file = "icons/20x20/tangency.png"),
-            constraint_types.CONCENTRICITY:          tk.PhotoImage(file = "icons/20x20/concentricity.png"),
+            CONSTRAINT_TYPES.COINCIDENCE:            tk.PhotoImage(file = "icons/20x20/coincidence.png"),
+            CONSTRAINT_TYPES.PARALLELITY:            tk.PhotoImage(file = "icons/20x20/parallelity.png"),
+            CONSTRAINT_TYPES.PERPENDICULARITY:       tk.PhotoImage(file = "icons/20x20/perpendicularity.png"),
+            CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/20x20/equal_length.png"),
+            CONSTRAINT_TYPES.LENGTH:                 tk.PhotoImage(file = "icons/20x20/length.png"),
+            CONSTRAINT_TYPES.FIXED:                  tk.PhotoImage(file = "icons/20x20/fixed.png"),
+            CONSTRAINT_TYPES.HORIZONTALITY:          tk.PhotoImage(file = "icons/20x20/horizontality.png"),
+            CONSTRAINT_TYPES.VERTICALITY:            tk.PhotoImage(file = "icons/20x20/verticality.png"),
+            CONSTRAINT_TYPES.TANGENCY:               tk.PhotoImage(file = "icons/20x20/tangency.png"),
+            CONSTRAINT_TYPES.CONCENTRICITY:          tk.PhotoImage(file = "icons/20x20/concentricity.png"),
         }
 
     def create_buttons(self):
@@ -154,162 +144,25 @@ class GUI(tk.Frame):
             return button
 
         self.constraint_button = {
-            constraint_types.COINCIDENCE:            create_menu_right_constraint_button(0, constraint_types.COINCIDENCE),
-            constraint_types.FIXED:                  create_menu_right_constraint_button(1, constraint_types.FIXED),
-            constraint_types.PERPENDICULARITY:       create_menu_right_constraint_button(2, constraint_types.PERPENDICULARITY),
-            constraint_types.PARALLELITY:            create_menu_right_constraint_button(3, constraint_types.PARALLELITY),
-            constraint_types.EQUAL_LENGTH_OR_RADIUS: create_menu_right_constraint_button(4, constraint_types.EQUAL_LENGTH_OR_RADIUS),
-            constraint_types.VERTICALITY:            create_menu_right_constraint_button(5, constraint_types.VERTICALITY),
-            constraint_types.HORIZONTALITY:          create_menu_right_constraint_button(6, constraint_types.HORIZONTALITY),
-            constraint_types.TANGENCY:               create_menu_right_constraint_button(7, constraint_types.TANGENCY),
+            CONSTRAINT_TYPES.COINCIDENCE:               create_menu_right_constraint_button(0, CONSTRAINT_TYPES.COINCIDENCE),
+            CONSTRAINT_TYPES.FIXED:                     create_menu_right_constraint_button(1, CONSTRAINT_TYPES.FIXED),
+            CONSTRAINT_TYPES.PERPENDICULARITY:          create_menu_right_constraint_button(2, CONSTRAINT_TYPES.PERPENDICULARITY),
+            CONSTRAINT_TYPES.PARALLELITY:               create_menu_right_constraint_button(3, CONSTRAINT_TYPES.PARALLELITY),
+            CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS:    create_menu_right_constraint_button(4, CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS),
+            CONSTRAINT_TYPES.VERTICALITY:               create_menu_right_constraint_button(5, CONSTRAINT_TYPES.VERTICALITY),
+            CONSTRAINT_TYPES.HORIZONTALITY:             create_menu_right_constraint_button(6, CONSTRAINT_TYPES.HORIZONTALITY),
+            CONSTRAINT_TYPES.TANGENCY:                  create_menu_right_constraint_button(7, CONSTRAINT_TYPES.TANGENCY),
+            CONSTRAINT_TYPES.CONCENTRICITY:             create_menu_right_constraint_button(8, CONSTRAINT_TYPES.CONCENTRICITY),
         }
 
-    def load_example(self, example):
-        self.remove_geometry()
-        self.remove_constraint_icons()
-        example(self.geometry, self.constraints)
-        self.add_geometry()
-        self.add_constraint_icons()
-        self.constraints_changed_callback()
+    # mouse and keyboard handlers
 
-    def delete_selected_entities(self):
-        entities_to_be_removed = []
-
-        for entity in list(self.selected_entities):
-            arc, segment = isinstance(entity, Arc), isinstance(entity, Segment)
-
-            if arc or segment:
-                self.remove_drawn_entity(entity)
-                entities_to_be_removed.append(entity)
-                entities_to_be_removed.append(entity.p1)
-                entities_to_be_removed.append(entity.p2)
-                self.selected_entities.remove(entity)
-
-        useless_constraints = get_useless_constraints(self.constraints, entities_to_be_removed)
-        constraints_to_be_removed = set(filter(lambda entity: isinstance(entity, Constraint), self.selected_entities))
-
-        for constraint in (constraints_to_be_removed.union(useless_constraints)):
-            self.remove_constraint(constraint)
-
-        for entity in entities_to_be_removed:
-            self.geometry.remove_entity(entity)
-
-        self.selected_entities.clear()
-
-        self.geometry_changed_callback(None)
-        self.constraints_changed_callback()
-        self.redraw_geometry()
-
-    def add_geometry(self):
-        for segment in self.geometry.segments:
-            self.add_drawn_segment(segment)
-
-        for arc in self.geometry.arcs:
-            self.add_drawn_arc(arc)
-
-    def remove_geometry(self):
-        for segment in self.geometry.segments:
-            self.remove_drawn_segment(segment)
-
-        for arc in self.geometry.arcs:
-            self.remove_drawn_arc(arc)
-
-    def add_drawn_point(self, point):
-        return self.canvas.create_oval(point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS, fill='blue', outline='blue')
-
-    def remove_drawn_point(self, point):
-        self.canvas.delete(self.point_to_drawn_circle[point])
-        self.point_to_drawn_circle.pop(point, None)
-
-    def add_drawn_segment(self, segment: Segment):
-        line = self.canvas.create_line(segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y, capstyle=tk.ROUND, joinstyle=tk.ROUND, width=2)
-        self.canvas.tag_lower(line)
-        self.entity_to_drawn_entity[segment] = line
-
-        self.point_to_drawn_circle[segment.p1] = self.add_drawn_point(segment.p1)
-        self.point_to_drawn_circle[segment.p2] = self.add_drawn_point(segment.p2)
-
-    def remove_drawn_segment(self, segment: Segment):
-        self.canvas.delete(self.entity_to_drawn_entity[segment])
-        self.entity_to_drawn_entity.pop(segment, None)
-        self.remove_drawn_point(segment.p1)
-        self.remove_drawn_point(segment.p2)
-
-    def calculate_arc_start_and_extent(self, arc: Arc):
-        arc_center = arc.center()
-
-        center_p2 = Vector.from_two_points(arc_center, arc.p2)
-        center_p1 = Vector.from_two_points(arc_center, arc.p1)
-
-        start_angle = degrees(atan2(-center_p1.y, center_p1.x))
-        end_angle = degrees(atan2(-center_p2.y, center_p2.x))
-
-        if start_angle < end_angle:
-            start_angle += 360
-
-        extent = end_angle - start_angle
-
-        return start_angle, extent
-
-    def add_drawn_arc(self, arc: Arc):
-        bb_coords = arc.bb_coords()
-
-        start, extent = self.calculate_arc_start_and_extent(arc)
-
-        drawn_arc = self.canvas.create_arc(bb_coords, start = start, extent = extent, style=tk.ARC, width=2)
-        self.canvas.tag_lower(drawn_arc)
-        self.entity_to_drawn_entity[arc] = drawn_arc 
-
-        self.point_to_drawn_circle[arc.p1] = self.add_drawn_point(arc.p1)
-        self.point_to_drawn_circle[arc.p2] = self.add_drawn_point(arc.p2)
-
-    def remove_drawn_arc(self, arc: Arc):
-        self.canvas.delete(self.entity_to_drawn_entity[arc])
-        self.entity_to_drawn_entity.pop(arc, None)
-        self.remove_drawn_point(arc.p1)
-        self.remove_drawn_point(arc.p2)
-
-    def remove_drawn_entity(self, entity):
+    def on_key_press(self, event):
         {
-            Arc:        self.remove_drawn_arc,
-            Segment:    self.remove_drawn_segment,
-        }.get(entity.__class__, lambda : None)(entity)
-
-    def redraw_geometry(self):
-        # segments and arcs
-        for entity in (self.geometry.segments + self.geometry.arcs):
-            for point in entity.points():
-                self.canvas.coords(self.point_to_drawn_circle[point], point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS)
-                self.canvas.itemconfig(self.point_to_drawn_circle[point], fill='blue', outline='blue')
-
-            line_color = "red" if entity in self.selected_entities else "black"
-            self.canvas.itemconfig(self.entity_to_drawn_entity[entity], fill=line_color)
-            if isinstance(entity, Arc):
-                self.canvas.itemconfig(self.entity_to_drawn_entity[entity], outline=line_color)
-
-        # segments
-        for segment in self.geometry.segments:
-            self.canvas.coords(self.entity_to_drawn_entity[segment], segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y)
-
-        # arcs
-        for arc in self.geometry.arcs:
-            self.canvas.coords(self.entity_to_drawn_entity[arc], arc.bb_coords())
-            start, extent = self.calculate_arc_start_and_extent(arc)
-            self.canvas.itemconfig(self.entity_to_drawn_entity[arc], start = start, extent = extent)
-
-        # selected points
-        for selected_point in [entity for entity in self.selected_entities if isinstance(entity, Point)]:
-            circle = self.point_to_drawn_circle[selected_point]
-            self.canvas.itemconfig(circle, fill='red', outline='red')
-            self.canvas.tag_raise(circle)
-
-        # constraint icons
-        for (_, constraint), drawn_constraint_icon in self.entity_and_constraint_to_drawn_constraint_icon.items():
-            color = "red" if constraint in self.selected_entities else "pale green"
-            drawn_constraint_icon.set_background_color(color)
-
-        self.update_constraint_icons()
-        self.set_text_info(f'e: {len(self.geometry.segments) + len(self.geometry.arcs)} | c: {len(self.constraints)}')
+            'Delete': self.delete_selected_entities,
+            's': self.on_add_segment_button_clicked,
+            'a': self.on_add_arc_button_clicked,
+        }.get(event.keysym, lambda : None)()
 
     def on_left_button_pressed(self, event):
         cursor = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
@@ -322,14 +175,14 @@ class GUI(tk.Frame):
             if self.adding_segment and len(self.points_for_new_geometry) == 2:
                 segment = Segment(self.points_for_new_geometry[0], self.points_for_new_geometry[1])
                 self.geometry.segments.append(segment)
-                self.add_drawn_segment(segment)
+                self.add_drawn_entity(segment)
                 self.new_geometry_added()
                 return
 
             if self.adding_arc and len(self.points_for_new_geometry) == 3:
                 arc = Arc(self.points_for_new_geometry[0], self.points_for_new_geometry[2], self.points_for_new_geometry[1])
                 self.geometry.arcs.append(arc)
-                self.add_drawn_arc(arc)
+                self.add_drawn_entity(arc)
                 self.new_geometry_added()
                 return
             return
@@ -387,7 +240,7 @@ class GUI(tk.Frame):
             return
 
         for constraint in self.constraints:
-            if (constraint.type == constraint_types.FIXED) and (self.selected_point in constraint.entities):
+            if (constraint.type == CONSTRAINT_TYPES.FIXED) and (self.selected_point in constraint.entities):
                 return
 
         self.selected_point_moved = True
@@ -407,16 +260,6 @@ class GUI(tk.Frame):
     def on_middle_mouse_button_move(self, event):
         self.canvas.scan_dragto(event.x, event.y, gain=1)
 
-    def on_resize(self, event):
-        # TODO: refactor
-        self.canvas.config(width = event.width - 4, height = event.height - 4)
-        
-        self.menu_left.place(x = 10, y = 10)
-        self.menu_right.place(x = event.width - 45, y = 10)
-
-        self.text_hint.place(x = 10, y = event.height - 25)
-        self.text_info.place(x = event.width - 70, y = event.height - 25)
-
     # def on_zoom(self,event):
     #     factor = 1.1 if (event.delta > 0) else 0.9
     #     x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
@@ -428,15 +271,19 @@ class GUI(tk.Frame):
     # def on_zoom_out(self,event):
     #     self.canvas.scale("all", event.x, event.y, 0.9, 0.9)
 
-    def new_geometry_added(self):
-        self.points_for_new_geometry.clear()
+    # external events handlers
 
-        self.adding_segment = False
-        self.adding_arc = False
+    def on_resize(self, event):
+        # TODO: refactor
+        self.canvas.config(width = event.width - 4, height = event.height - 4)
         
-        self.set_text_hint("")
+        self.menu_left.place(x = 10, y = 10)
+        self.menu_right.place(x = event.width - 45, y = 10)
 
-        self.geometry_changed_callback(None)
+        self.text_hint.place(x = 10, y = event.height - 25)
+        self.text_info.place(x = event.width - 70, y = event.height - 25)
+
+    # screen buttons handlers
 
     def on_add_segment_button_clicked(self):
         self.set_text_hint('Select point 1')
@@ -452,20 +299,122 @@ class GUI(tk.Frame):
         self.selected_entities.clear()
         self.constraints_changed_callback()
 
-    def add_constraint(self, constraint: Constraint):
-        self.constraints.append(constraint)
-        self.add_constraint_icon(constraint)
+    # elements drawing (geometry)
 
-    def remove_constraint(self, constraint: Constraint):
-        self.remove_constraint_icon(constraint)
-        self.constraints.remove(constraint)
+    def add_drawn_point(self, point):
+        return self.canvas.create_oval(point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS, fill='blue', outline='blue')
 
-    def check_constraints_requirements(self):
-        for button in self.constraint_button.values():
-            button.configure(state = tk.DISABLED)
+    def remove_drawn_point(self, point: Point):
+        self.canvas.delete(self.entity_to_drawn_entity[point])
+        self.entity_to_drawn_entity.pop(point, None)
 
-        for constraint_type in get_available_constraints(self.selected_entities):
-            self.constraint_button[constraint_type].configure(state = tk.NORMAL)
+    def add_drawn_segment(self, segment: Segment):
+        line = self.canvas.create_line(segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y, capstyle=tk.ROUND, joinstyle=tk.ROUND, width=2)
+        self.canvas.tag_lower(line)
+        self.entity_to_drawn_entity[segment] = line
+
+        self.entity_to_drawn_entity[segment.p1] = self.add_drawn_entity(segment.p1)
+        self.entity_to_drawn_entity[segment.p2] = self.add_drawn_entity(segment.p2)
+
+    def remove_drawn_segment(self, segment: Segment):
+        self.canvas.delete(self.entity_to_drawn_entity[segment])
+        self.entity_to_drawn_entity.pop(segment, None)
+        self.remove_drawn_entity(segment.p1)
+        self.remove_drawn_entity(segment.p2)
+
+    def calculate_arc_start_and_extent(self, arc: Arc):
+        arc_center = arc.center()
+
+        center_p2 = Vector.from_two_points(arc_center, arc.p2)
+        center_p1 = Vector.from_two_points(arc_center, arc.p1)
+
+        start_angle = degrees(atan2(-center_p1.y, center_p1.x))
+        end_angle = degrees(atan2(-center_p2.y, center_p2.x))
+
+        if start_angle < end_angle:
+            start_angle += 360
+
+        extent = end_angle - start_angle
+
+        return start_angle, extent
+
+    def add_drawn_arc(self, arc: Arc):
+        bb_coords = arc.bb_coords()
+
+        start, extent = self.calculate_arc_start_and_extent(arc)
+
+        drawn_arc = self.canvas.create_arc(bb_coords, start = start, extent = extent, style=tk.ARC, width=2)
+        self.canvas.tag_lower(drawn_arc)
+        self.entity_to_drawn_entity[arc] = drawn_arc 
+
+        self.entity_to_drawn_entity[arc.p1] = self.add_drawn_entity(arc.p1)
+        self.entity_to_drawn_entity[arc.p2] = self.add_drawn_entity(arc.p2)
+
+    def remove_drawn_arc(self, arc: Arc):
+        self.canvas.delete(self.entity_to_drawn_entity[arc])
+        self.entity_to_drawn_entity.pop(arc, None)
+        self.remove_drawn_entity(arc.p1)
+        self.remove_drawn_entity(arc.p2)
+
+    def remove_drawn_entity(self, entity):
+        {
+            Arc:        self.remove_drawn_arc,
+            Segment:    self.remove_drawn_segment,
+            Point:      self.remove_drawn_point,
+        }.get(entity.__class__, lambda : None)(entity)
+
+    def add_drawn_entity(self, entity):
+        return {
+            Arc:        self.add_drawn_arc,
+            Segment:    self.add_drawn_segment,
+            Point:      self.add_drawn_point,
+        }.get(entity.__class__, lambda : None)(entity)
+
+    def add_geometry(self):
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            self.add_drawn_entity(entity)
+
+    def remove_geometry(self):
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            self.remove_drawn_entity(entity)
+
+    def redraw_geometry(self):
+        # segments and arcs
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            for point in entity.points():
+                self.canvas.coords(self.entity_to_drawn_entity[point], point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS)
+                self.canvas.itemconfig(self.entity_to_drawn_entity[point], fill='blue', outline='blue')
+
+            line_color = "red" if entity in self.selected_entities else "black"
+            self.canvas.itemconfig(self.entity_to_drawn_entity[entity], fill=line_color)
+            if isinstance(entity, Arc):
+                self.canvas.itemconfig(self.entity_to_drawn_entity[entity], outline=line_color)
+
+        # segments
+        for segment in self.geometry.segments:
+            self.canvas.coords(self.entity_to_drawn_entity[segment], segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y)
+
+        # arcs
+        for arc in self.geometry.arcs:
+            self.canvas.coords(self.entity_to_drawn_entity[arc], arc.bb_coords())
+            start, extent = self.calculate_arc_start_and_extent(arc)
+            self.canvas.itemconfig(self.entity_to_drawn_entity[arc], start = start, extent = extent)
+
+        # selected points
+        for selected_point in [entity for entity in self.selected_entities if isinstance(entity, Point)]:
+            circle = self.entity_to_drawn_entity[selected_point]
+            self.canvas.itemconfig(circle, fill='red', outline='red')
+            self.canvas.tag_raise(circle)
+
+        # constraint icons
+        for (_, constraint), drawn_constraint_icon in self.entity_and_constraint_to_drawn_constraint_icon.items():
+            color = "red" if constraint in self.selected_entities else "pale green"
+            drawn_constraint_icon.set_background_color(color)
+
+        self.update_constraint_icons()
+        self.set_text_info(f'e: {len(self.geometry.segments) + len(self.geometry.arcs)} | c: {len(self.constraints)}')
+
+    # elements drawing (constraints)
 
     def add_constraint_icon(self, constraint):
         for entity in (self.geometry.segments + self.geometry.arcs):
@@ -476,7 +425,7 @@ class GUI(tk.Frame):
             for point in entity.points():
                 if point in constraint.entities:
                     if not (point, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
-                        exists_already = (constraint.type == constraint_types.COINCIDENCE) and any(c is constraint for (p, c) in self.entity_and_constraint_to_drawn_constraint_icon)
+                        exists_already = (constraint.type == CONSTRAINT_TYPES.COINCIDENCE) and any(c is constraint for (p, c) in self.entity_and_constraint_to_drawn_constraint_icon)
                         if not exists_already:
                             self.entity_and_constraint_to_drawn_constraint_icon[(point, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon_20x20[constraint.type], 20)
 
@@ -564,6 +513,69 @@ class GUI(tk.Frame):
                     if (i > helper(icons_in_first_layer, layer) - 2):
                         layer += 1
                         offset += Vector(0, first_layer_radius)
+
+    # misc
+
+    def add_constraint(self, constraint: Constraint):
+        self.constraints.append(constraint)
+        self.add_constraint_icon(constraint)
+
+    def remove_constraint(self, constraint: Constraint):
+        self.remove_constraint_icon(constraint)
+        self.constraints.remove(constraint)
+
+    def new_geometry_added(self):
+        self.points_for_new_geometry.clear()
+
+        self.adding_segment = False
+        self.adding_arc = False
+        
+        self.set_text_hint("")
+
+        self.geometry_changed_callback(None)
+
+    def check_constraints_requirements(self):
+        for button in self.constraint_button.values():
+            button.configure(state = tk.DISABLED)
+
+        for constraint_type in get_available_constraints(self.selected_entities):
+            self.constraint_button[constraint_type].configure(state = tk.NORMAL)
+
+    def load_example(self, example):
+        self.remove_geometry()
+        self.remove_constraint_icons()
+        example(self.geometry, self.constraints)
+        self.add_geometry()
+        self.add_constraint_icons()
+        self.constraints_changed_callback()
+
+    def delete_selected_entities(self):
+        entities_to_be_removed = []
+
+        for entity in list(self.selected_entities):
+            arc, segment = isinstance(entity, Arc), isinstance(entity, Segment)
+
+            if arc or segment:
+                self.remove_drawn_entity(entity)
+                entities_to_be_removed.append(entity)
+                entities_to_be_removed.append(entity.p1)
+                entities_to_be_removed.append(entity.p2)
+                self.selected_entities.remove(entity)
+
+        useless_constraints = get_useless_constraints(self.constraints, entities_to_be_removed)
+        constraints_to_be_removed = set(filter(lambda entity: isinstance(entity, Constraint), self.selected_entities))
+
+        for constraint in (constraints_to_be_removed.union(useless_constraints)):
+            self.remove_constraint(constraint)
+
+        for entity in entities_to_be_removed:
+            self.geometry.remove_entity(entity)
+
+        self.selected_entities.clear()
+
+        self.geometry_changed_callback(None)
+        self.constraints_changed_callback()
+        self.redraw_geometry()
 
 class ConstraintIcon():
     def __init__(self, canvas, icon, icon_size):
