@@ -60,6 +60,7 @@ class GUI(tk.Frame):
 
     def set_text_info(self, text):
         self.text_info.config(text = text)
+        self.text_info.place(x = self.winfo_width() - len(text) * 4 - 15, y = self.winfo_height() - 25)
 
     def create_top_menu(self):
         menubar = tk.Menu(self.root)
@@ -282,7 +283,6 @@ class GUI(tk.Frame):
         self.menu_right.place(x = event.width - 45, y = 10)
 
         self.text_hint.place(x = 10, y = event.height - 25)
-        self.text_info.place(x = event.width - 70, y = event.height - 25)
 
     # screen buttons handlers
 
