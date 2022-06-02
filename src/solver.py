@@ -1,6 +1,6 @@
 from scipy.optimize import minimize
 from copy import copy
-from constraints import COINCIDENCE, FIXED, constraint_function
+from constraints import constraint_function, constraint_types
 from geometry import Geometry
 from point import Point, distance_p2p
 from segment import Segment
@@ -113,7 +113,7 @@ class Solver:
         self.point_to_virtual_point = {}
 
         for constraint in self.constraints:
-            if constraint.type == COINCIDENCE:
+            if constraint.type == constraint_types.COINCIDENCE:
                 virtual_point = Point(constraint.entities[0].x, constraint.entities[0].y)
 
                 for point in constraint.entities:
@@ -131,7 +131,7 @@ class Solver:
         self.fixed_points = set()
 
         for constraint in self.constraints:
-            if constraint.type == FIXED:
+            if constraint.type == constraint_types.FIXED:
                 for point in constraint.entities:
                     if point in self.point_to_virtual_point:
                         virtual_point = self.point_to_virtual_point[point]

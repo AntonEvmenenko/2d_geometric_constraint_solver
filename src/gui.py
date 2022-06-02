@@ -8,7 +8,7 @@ from geometry import Geometry
 from point import Point, distance_p2p
 from segment import Segment, distance_p2s
 from math import atan2, degrees, pi
-from arc import ARC_DIRECTION_CCW, ARC_DIRECTION_CW, Arc, distance_p2a
+from arc import Arc, distance_p2a
 
 USER_SELECTING_RADUIS = 5
 POINT_RADIUS = 4
@@ -108,29 +108,29 @@ class GUI(tk.Frame):
         self.circle_icon =  tk.PhotoImage(file = "icons/32x32/circle.png")
 
         self.constraint_icon_32x32 = {
-            COINCIDENCE:            tk.PhotoImage(file = "icons/32x32/coincidence.png"),
-            PARALLELITY:            tk.PhotoImage(file = "icons/32x32/parallelity.png"),
-            PERPENDICULARITY:       tk.PhotoImage(file = "icons/32x32/perpendicularity.png"),
-            EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/32x32/equal_length.png"),
-            LENGTH:                 tk.PhotoImage(file = "icons/32x32/length.png"),
-            FIXED:                  tk.PhotoImage(file = "icons/32x32/fixed.png"),
-            HORIZONTALITY:          tk.PhotoImage(file = "icons/32x32/horizontality.png"),
-            VERTICALITY:            tk.PhotoImage(file = "icons/32x32/verticality.png"),
-            TANGENCY:               tk.PhotoImage(file = "icons/32x32/tangency.png"),
-            CONCENTRICITY:          tk.PhotoImage(file = "icons/32x32/concentricity.png"),
+            constraint_types.COINCIDENCE:            tk.PhotoImage(file = "icons/32x32/coincidence.png"),
+            constraint_types.PARALLELITY:            tk.PhotoImage(file = "icons/32x32/parallelity.png"),
+            constraint_types.PERPENDICULARITY:       tk.PhotoImage(file = "icons/32x32/perpendicularity.png"),
+            constraint_types.EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/32x32/equal_length.png"),
+            constraint_types.LENGTH:                 tk.PhotoImage(file = "icons/32x32/length.png"),
+            constraint_types.FIXED:                  tk.PhotoImage(file = "icons/32x32/fixed.png"),
+            constraint_types.HORIZONTALITY:          tk.PhotoImage(file = "icons/32x32/horizontality.png"),
+            constraint_types.VERTICALITY:            tk.PhotoImage(file = "icons/32x32/verticality.png"),
+            constraint_types.TANGENCY:               tk.PhotoImage(file = "icons/32x32/tangency.png"),
+            constraint_types.CONCENTRICITY:          tk.PhotoImage(file = "icons/32x32/concentricity.png"),
         }
 
         self.constraint_icon_20x20 = {
-            COINCIDENCE:            tk.PhotoImage(file = "icons/20x20/coincidence.png"),
-            PARALLELITY:            tk.PhotoImage(file = "icons/20x20/parallelity.png"),
-            PERPENDICULARITY:       tk.PhotoImage(file = "icons/20x20/perpendicularity.png"),
-            EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/20x20/equal_length.png"),
-            LENGTH:                 tk.PhotoImage(file = "icons/20x20/length.png"),
-            FIXED:                  tk.PhotoImage(file = "icons/20x20/fixed.png"),
-            HORIZONTALITY:          tk.PhotoImage(file = "icons/20x20/horizontality.png"),
-            VERTICALITY:            tk.PhotoImage(file = "icons/20x20/verticality.png"),
-            TANGENCY:               tk.PhotoImage(file = "icons/20x20/tangency.png"),
-            CONCENTRICITY:          tk.PhotoImage(file = "icons/20x20/concentricity.png"),
+            constraint_types.COINCIDENCE:            tk.PhotoImage(file = "icons/20x20/coincidence.png"),
+            constraint_types.PARALLELITY:            tk.PhotoImage(file = "icons/20x20/parallelity.png"),
+            constraint_types.PERPENDICULARITY:       tk.PhotoImage(file = "icons/20x20/perpendicularity.png"),
+            constraint_types.EQUAL_LENGTH_OR_RADIUS: tk.PhotoImage(file = "icons/20x20/equal_length.png"),
+            constraint_types.LENGTH:                 tk.PhotoImage(file = "icons/20x20/length.png"),
+            constraint_types.FIXED:                  tk.PhotoImage(file = "icons/20x20/fixed.png"),
+            constraint_types.HORIZONTALITY:          tk.PhotoImage(file = "icons/20x20/horizontality.png"),
+            constraint_types.VERTICALITY:            tk.PhotoImage(file = "icons/20x20/verticality.png"),
+            constraint_types.TANGENCY:               tk.PhotoImage(file = "icons/20x20/tangency.png"),
+            constraint_types.CONCENTRICITY:          tk.PhotoImage(file = "icons/20x20/concentricity.png"),
         }
 
     def create_buttons(self):
@@ -148,14 +148,14 @@ class GUI(tk.Frame):
             return button
 
         self.constraint_button = {
-            COINCIDENCE:            create_menu_right_constraint_button(0, COINCIDENCE),
-            FIXED:                  create_menu_right_constraint_button(1, FIXED),
-            PERPENDICULARITY:       create_menu_right_constraint_button(2, PERPENDICULARITY),
-            PARALLELITY:            create_menu_right_constraint_button(3, PARALLELITY),
-            EQUAL_LENGTH_OR_RADIUS: create_menu_right_constraint_button(4, EQUAL_LENGTH_OR_RADIUS),
-            VERTICALITY:            create_menu_right_constraint_button(5, VERTICALITY),
-            HORIZONTALITY:          create_menu_right_constraint_button(6, HORIZONTALITY),
-            TANGENCY:               create_menu_right_constraint_button(7, TANGENCY),
+            constraint_types.COINCIDENCE:            create_menu_right_constraint_button(0, constraint_types.COINCIDENCE),
+            constraint_types.FIXED:                  create_menu_right_constraint_button(1, constraint_types.FIXED),
+            constraint_types.PERPENDICULARITY:       create_menu_right_constraint_button(2, constraint_types.PERPENDICULARITY),
+            constraint_types.PARALLELITY:            create_menu_right_constraint_button(3, constraint_types.PARALLELITY),
+            constraint_types.EQUAL_LENGTH_OR_RADIUS: create_menu_right_constraint_button(4, constraint_types.EQUAL_LENGTH_OR_RADIUS),
+            constraint_types.VERTICALITY:            create_menu_right_constraint_button(5, constraint_types.VERTICALITY),
+            constraint_types.HORIZONTALITY:          create_menu_right_constraint_button(6, constraint_types.HORIZONTALITY),
+            constraint_types.TANGENCY:               create_menu_right_constraint_button(7, constraint_types.TANGENCY),
         }
 
     def load_example(self, example):
@@ -309,7 +309,7 @@ class GUI(tk.Frame):
             return
 
         for constraint in self.constraints:
-            if (constraint.type == FIXED) and (self.selected_point in constraint.entities):
+            if (constraint.type == constraint_types.FIXED) and (self.selected_point in constraint.entities):
                 return
 
         self.selected_point_moved = True
@@ -428,7 +428,7 @@ class GUI(tk.Frame):
                     if point in constraint.entities:
                         if not (point, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
 
-                            exists_already = (constraint.type == COINCIDENCE) and any(c is constraint for (p, c) in self.entity_and_constraint_to_drawn_constraint_icon)
+                            exists_already = (constraint.type == constraint_types.COINCIDENCE) and any(c is constraint for (p, c) in self.entity_and_constraint_to_drawn_constraint_icon)
 
                             if not exists_already:
                                 self.entity_and_constraint_to_drawn_constraint_icon[(point, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon_20x20[constraint.type], 20)

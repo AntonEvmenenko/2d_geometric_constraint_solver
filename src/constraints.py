@@ -1,4 +1,5 @@
 from collections import Counter
+from enum import Enum, auto
 from tkinter import ARC
 from point import Point, distance_p2p
 from segment import Segment
@@ -6,28 +7,17 @@ from arc import Arc
 from line import Line, distance_p2l
 from vector import Vector, cross, dot
 
-COINCIDENCE             = 0
-PARALLELITY             = 1
-PERPENDICULARITY        = 2
-EQUAL_LENGTH_OR_RADIUS  = 3
-LENGTH                  = 4
-FIXED                   = 5
-HORIZONTALITY           = 6
-VERTICALITY             = 7
-TANGENCY                = 8
-CONCENTRICITY           = 9
-
-constraint_types = [
-    COINCIDENCE,
-    PARALLELITY,
-    PERPENDICULARITY,
-    EQUAL_LENGTH_OR_RADIUS,
-    # LENGTH,
-    FIXED,
-    HORIZONTALITY,
-    VERTICALITY,
-    TANGENCY,
-]
+class constraint_types(Enum):
+    COINCIDENCE             = auto()
+    PARALLELITY             = auto()
+    PERPENDICULARITY        = auto()
+    EQUAL_LENGTH_OR_RADIUS  = auto()
+    LENGTH                  = auto()
+    FIXED                   = auto()
+    HORIZONTALITY           = auto()
+    VERTICALITY             = auto()
+    TANGENCY                = auto()
+    CONCENTRICITY           = auto()
 
 # helpers
 
@@ -75,40 +65,41 @@ def tangency(entity1, entity2):
         assert False
 
 constraint_function = {
-    COINCIDENCE:            None,
-    PARALLELITY:            parallel,
-    PERPENDICULARITY:       perpendicular,
-    EQUAL_LENGTH_OR_RADIUS: equal_length_or_radius,
-    LENGTH:                 length,
-    FIXED:                  None,
-    HORIZONTALITY:          horizontality,
-    VERTICALITY:            verticality,
-    TANGENCY:               tangency,
+    constraint_types.COINCIDENCE:            None,
+    constraint_types.PARALLELITY:            parallel,
+    constraint_types.PERPENDICULARITY:       perpendicular,
+    constraint_types.EQUAL_LENGTH_OR_RADIUS: equal_length_or_radius,
+    constraint_types.LENGTH:                 length,
+    constraint_types.FIXED:                  None,
+    constraint_types.HORIZONTALITY:          horizontality,
+    constraint_types.VERTICALITY:            verticality,
+    constraint_types.TANGENCY:               tangency,
 }
 
-MORE_THAN_ZERO  = 10000
-MORE_THAN_ONE   = 10001
+class quantity(Enum):
+    MORE_THAN_ZERO  = auto()
+    MORE_THAN_ONE   = auto()
 
 constraint_requirements = {
-    COINCIDENCE:            [(MORE_THAN_ONE, Point)],
-    PARALLELITY:            [(MORE_THAN_ONE, Segment)],
-    PERPENDICULARITY:       [(Segment, Segment)],
-    EQUAL_LENGTH_OR_RADIUS: [(MORE_THAN_ONE, Segment), (MORE_THAN_ONE, Arc)],
-    # LENGTH:               (),
-    FIXED:                  [(MORE_THAN_ZERO, Point)],
-    HORIZONTALITY:          [(MORE_THAN_ZERO, Segment), (MORE_THAN_ONE, Point)],
-    VERTICALITY:            [(MORE_THAN_ZERO, Segment), (MORE_THAN_ONE, Point)],
-    TANGENCY:               [(Arc, Segment), (Arc, Arc)]
+    constraint_types.COINCIDENCE:            [(quantity.MORE_THAN_ONE, Point)],
+    constraint_types.PARALLELITY:            [(quantity.MORE_THAN_ONE, Segment)],
+    constraint_types.PERPENDICULARITY:       [(Segment, Segment)],
+    constraint_types.EQUAL_LENGTH_OR_RADIUS: [(quantity.MORE_THAN_ONE, Segment), (quantity.MORE_THAN_ONE, Arc)],
+    # constraint_types.LENGTH:               (),
+    constraint_types.FIXED:                  [(quantity.MORE_THAN_ZERO, Point)],
+    constraint_types.HORIZONTALITY:          [(quantity.MORE_THAN_ZERO, Segment), (quantity.MORE_THAN_ONE, Point)],
+    constraint_types.VERTICALITY:            [(quantity.MORE_THAN_ZERO, Segment), (quantity.MORE_THAN_ONE, Point)],
+    constraint_types.TANGENCY:               [(Arc, Segment), (Arc, Arc)]
 }
 
 def get_available_constraints(entities):
     available_constraints = set()
 
     for constraint_type in constraint_types:
-        for constraint_requirement in constraint_requirements[constraint_type]:
-            if (MORE_THAN_ZERO in constraint_requirement) or (MORE_THAN_ONE in constraint_requirement):
+        for constraint_requirement in constraint_requirements.get(constraint_type, ()):
+            if (quantity.MORE_THAN_ZERO in constraint_requirement) or (quantity.MORE_THAN_ONE in constraint_requirement):
                 count = len([entity for entity in entities if entity.__class__ in constraint_requirement])
-                right_count = (MORE_THAN_ONE in constraint_requirement and count > 1) or (MORE_THAN_ZERO in constraint_requirement and count > 0)
+                right_count = (quantity.MORE_THAN_ONE in constraint_requirement and count > 1) or (quantity.MORE_THAN_ZERO in constraint_requirement and count > 0)
                 all_entities = count == len(entities)
 
                 if right_count and all_entities:

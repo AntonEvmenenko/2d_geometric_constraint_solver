@@ -1,11 +1,15 @@
+from enum import auto
 from math import atan2, degrees, pi
+
+from prometheus_client import Enum
 from common import equal_eps, v2v_angle_cw
 from point import Point, distance_p2p
 from line import Line, intersection_line_line
 from vector import Vector, cross, dot
 
-ARC_DIRECTION_CW = 0
-ARC_DIRECTION_CCW = 1
+class direction(Enum):
+    CW      = auto()
+    CCW     = auto()
 
 class Arc:
     # p1, p2 -- beginning and end of the arc
@@ -33,11 +37,11 @@ class Arc:
         center_p1 = Vector.from_two_points(center, self.p1)
         center_p = Vector.from_two_points(center, p)
 
-        direction = ARC_DIRECTION_CW if cross(center_p1, center_p) > 0 else ARC_DIRECTION_CCW
+        dir = direction.CW if cross(center_p1, center_p) > 0 else direction.CCW
 
-        if direction == ARC_DIRECTION_CCW:
+        if dir == direction.CCW:
             self.p1, self.p2 = self.p2, self.p1
-            direction = ARC_DIRECTION_CW
+            dir = direction.CW
 
         self.d = dot(Vector.from_two_points(p1_p2_segment_center, center), self.get_n())
 
