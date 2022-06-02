@@ -29,33 +29,39 @@ constraint_types = [
     TANGENCY,
 ]
 
+# helpers
+
+def pairs(entities):
+    return zip(entities[:-1], entities[1:])
+
+def all_entities(entities, cls):
+    return all(entity.__class__ is cls for entity in entities)
+
+# constraints
+
 def parallel(*segments):
-    return [cross(pair[0].vector(), pair[1].vector()) for pair in zip(segments[:-1], segments[1:])]
+    return [cross(pair[0].vector(), pair[1].vector()) for pair in pairs(segments)]
 
 def perpendicular(s1: Segment, s2: Segment):
     return [dot(s1.vector(), s2.vector())]
 
 def equal_length_or_radius(*entities):
-    segments = all(entity.__class__ is Segment for entity in entities)
-    arcs = all(entity.__class__ is Arc for entity in entities)
+    segments, arcs = all_entities(entities, Segment), all_entities(entities, Arc)
     assert segments or arcs
-    return [(pair[0].vector().length() - pair[1].vector().length()) for pair in zip(entities[:-1], entities[1:])] if segments else \
-        [(pair[0].radius() - pair[1].radius()) for pair in zip(entities[:-1], entities[1:])]
+    return [(pair[0].length() - pair[1].length()) for pair in pairs(entities)] if segments else [(pair[0].radius() - pair[1].radius()) for pair in pairs(entities)]
 
 def length(segment: Segment, length: float):
     return [(Vector(segment.p2.x - segment.p1.x, segment.p2.y - segment.p1.y).length() - length)]
 
 def horizontality(*entities):
-    points = all(entity.__class__ is Point for entity in entities)
-    segments = all(entity.__class__ is Segment for entity in entities)
+    points, segments = all_entities(entities, Point), all_entities(entities, Segment)
     assert points or segments
-    return [(pair[0].y - pair[1].y) for pair in zip(entities[:-1], entities[1:])] if points else [(segment.p1.y - segment.p2.y) for segment in entities]
+    return [(pair[0].y - pair[1].y) for pair in pairs(entities)] if points else [(segment.p1.y - segment.p2.y) for segment in entities]
 
 def verticality(*entities):
-    points = all(entity.__class__ is Point for entity in entities)
-    segments = all(entity.__class__ is Segment for entity in entities)
+    points, segments = all_entities(entities, Point), all_entities(entities, Segment)
     assert points or segments
-    return [(pair[0].x - pair[1].x) for pair in zip(entities[:-1], entities[1:])] if points else [(segment.p1.x - segment.p2.x) for segment in entities]
+    return [(pair[0].x - pair[1].x) for pair in pairs(entities)] if points else [(segment.p1.x - segment.p2.x) for segment in entities]
 
 def tangency(entity1, entity2):
     temp = Counter((entity1.__class__, entity2.__class__))

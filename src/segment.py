@@ -9,6 +9,9 @@ class Segment:
     def vector(self):
         return Vector.from_two_points(self.p1, self.p2)
 
+    def length(self):
+        return distance_p2p(self.p1, self.p2)
+
     def points(self):
         return [self.p1, self.p2]
 
