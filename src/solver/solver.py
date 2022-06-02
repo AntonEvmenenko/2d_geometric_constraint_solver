@@ -1,10 +1,10 @@
 from enum import Enum, auto
 from scipy.optimize import minimize
 from copy import copy
-from constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPES
+from constraints.constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPES
 from geometry import Geometry
-from point import Point, distance_p2p
-from segment import Segment
+from geometric_primitives.point import Point, distance_p2p
+from geometric_primitives.segment import Segment
 
 def point_to_vars(p: Point):
     return [p.x, p.y]

@@ -2,10 +2,10 @@ from enum import auto
 from math import atan2, degrees, pi
 
 from prometheus_client import Enum
-from common import equal_eps, v2v_angle_cw
-from point import Point, distance_p2p
-from line import Line, intersection_line_line
-from vector import Vector, cross, dot
+from geometric_primitives.common import equal_eps, v2v_angle_cw
+from geometric_primitives.point import Point, distance_p2p
+from geometric_primitives.line import Line, intersection_line_line
+from geometric_primitives.vector import Vector, cross, dot
 
 class DIRECTION(Enum):
     CW      = auto()

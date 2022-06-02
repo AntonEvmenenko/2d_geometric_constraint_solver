@@ -1,7 +1,7 @@
 import tkinter as tk
 from geometry import Geometry
-from gui import GUI
-from solver import Solver
+from gui.gui import GUI
+from solver.solver import Solver
 
 def geometry_changed_by_GUI(active_point):
     global solver

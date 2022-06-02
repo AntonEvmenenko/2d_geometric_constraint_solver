@@ -1,8 +1,8 @@
-from constraint import Constraint
-from constraints import CONSTRAINT_TYPES
-from point import Point
-from segment import Segment
-from arc import Arc
+from constraints.constraint import Constraint
+from constraints.constraints import CONSTRAINT_TYPES
+from geometric_primitives.point import Point
+from geometric_primitives.segment import Segment
+from geometric_primitives.arc import Arc
 
 def clear_geometry_and_constraints(geometry, constraints):
     geometry.clear()

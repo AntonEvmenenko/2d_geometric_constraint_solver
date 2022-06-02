@@ -1,5 +1,5 @@
-from point import Point, distance_p2p
-from vector import Vector, cross, dot
+from geometric_primitives.point import Point, distance_p2p
+from geometric_primitives.vector import Vector, cross, dot
 
 class Segment:
     def __init__(self, p1: Point, p2: Point):

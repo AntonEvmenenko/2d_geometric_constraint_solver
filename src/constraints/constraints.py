@@ -1,10 +1,10 @@
 from collections import Counter
 from enum import Enum, auto
-from point import Point, distance_p2p
-from segment import Segment
-from arc import Arc
-from line import Line, distance_p2l
-from vector import Vector, cross, dot
+from geometric_primitives.point import Point, distance_p2p
+from geometric_primitives.segment import Segment
+from geometric_primitives.arc import Arc
+from geometric_primitives.line import Line, distance_p2l
+from geometric_primitives.vector import Vector, cross, dot
 
 class CONSTRAINT_TYPES(Enum):
     COINCIDENCE             = auto()

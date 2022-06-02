@@ -1,5 +1,5 @@
 from math import atan2, pi
-from vector import cross, dot
+from geometric_primitives.vector import cross, dot
 
 def angle_to_0_2pi(angle):
     if angle < 0:

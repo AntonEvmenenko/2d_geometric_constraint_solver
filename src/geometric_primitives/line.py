@@ -1,5 +1,5 @@
-from point import Point
-from vector import Vector
+from geometric_primitives.point import Point
+from geometric_primitives.vector import Vector
 
 # def line(p1, p2):
 #     A = (p1[1] - p2[1])
