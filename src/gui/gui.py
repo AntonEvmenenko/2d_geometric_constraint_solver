@@ -9,13 +9,14 @@ from math import atan2, degrees, pi
 from geometric_primitives.arc import Arc, distance_p2a
 from gui.constraint_icon import ConstraintIcon
 
-USER_SELECTING_RADUIS   = 5
+USER_SELECTING_RADUIS   = 10
 
 BUTTON_ICON_SIZE        = 64
 CONSTRAINT_ICON_SIZE    = 32
 CONSTRAINT_ICON_SPACING = 40
 LINE_TICKNESS           = 6
 POINT_RADIUS            = 8
+BOTTOM_TEXT_OFFSET      = 50
 
 class GUI(tk.Frame):
     def __init__(self, root, geometry: Geometry, geometry_changed_callback, constraints, constraints_changed_callback):
@@ -65,7 +66,7 @@ class GUI(tk.Frame):
 
     def set_text_info(self, text):
         self.text_info.config(text = text)
-        self.text_info.place(x = self.winfo_width() - len(text) * 4 - 15, y = self.winfo_height() - 25)
+        self.text_info.place(x = self.winfo_width() - len(text) * 12 - 15, y = self.winfo_height() - BOTTOM_TEXT_OFFSET)
 
     def create_top_menu(self):
         menubar = tk.Menu(self.root)
@@ -284,7 +285,7 @@ class GUI(tk.Frame):
         self.menu_left.place(x = 10, y = 10)
         self.menu_right.place(x = event.width - BUTTON_ICON_SIZE - 15, y = 10)
 
-        self.text_hint.place(x = 10, y = event.height - 25)
+        self.text_hint.place(x = 10, y = event.height - BOTTOM_TEXT_OFFSET)
         # pass
 
     # screen buttons handlers

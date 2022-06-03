@@ -4,6 +4,8 @@ from geometric_primitives.point import Point
 from geometric_primitives.segment import Segment
 from geometric_primitives.arc import Arc
 
+SCALE = 2.5
+
 def clear_geometry_and_constraints(geometry, constraints):
     geometry.clear()
     constraints.clear()
@@ -12,12 +14,12 @@ def Lines(geometry, constraints):
     clear_geometry_and_constraints(geometry, constraints)
 
     geometry.segments = [
-        Segment(Point(300, 300), Point(500, 300)),
-        Segment(Point(500, 300), Point(400, 200)),
-        Segment(Point(400, 200), Point(300, 300)),
+        Segment(Point(300 * SCALE, 300 * SCALE), Point(500 * SCALE, 300 * SCALE)),
+        Segment(Point(500 * SCALE, 300 * SCALE), Point(400 * SCALE, 200 * SCALE)),
+        Segment(Point(400 * SCALE, 200 * SCALE), Point(300 * SCALE, 300 * SCALE)),
         
-        Segment(Point(500, 300), Point(600, 250)),
-        Segment(Point(600, 250), Point(400, 200)),
+        Segment(Point(500 * SCALE, 300 * SCALE), Point(600 * SCALE, 250 * SCALE)),
+        Segment(Point(600 * SCALE, 250 * SCALE), Point(400 * SCALE, 200 * SCALE)),
     ]
 
     constraints += [
@@ -41,13 +43,13 @@ def CutSlot(geometry, constraints):
     clear_geometry_and_constraints(geometry, constraints)
 
     geometry.segments = [
-        Segment(Point(300, 200), Point(300, 400)),
-        Segment(Point(300, 400), Point(500, 400)),
-        Segment(Point(500, 400), Point(500, 200)),
+        Segment(Point(300 * SCALE, 200 * SCALE), Point(300 * SCALE, 400 * SCALE)),
+        Segment(Point(300 * SCALE, 400 * SCALE), Point(500 * SCALE, 400 * SCALE)),
+        Segment(Point(500 * SCALE, 400 * SCALE), Point(500 * SCALE, 200 * SCALE)),
     ]
 
     geometry.arcs = [
-        Arc(Point(300, 200), Point(500, 200), Point(400, 100))
+        Arc(Point(300 * SCALE, 200 * SCALE), Point(500 * SCALE, 200 * SCALE), Point(400 * SCALE, 100 * SCALE))
     ]
 
     constraints += [
@@ -65,13 +67,13 @@ def Slot(geometry, constraints):
     clear_geometry_and_constraints(geometry, constraints)
 
     geometry.segments = [
-        Segment(Point(300, 200), Point(300, 400)),
-        Segment(Point(500, 400), Point(500, 200)),
+        Segment(Point(300 * SCALE, 200 * SCALE), Point(300 * SCALE, 400 * SCALE)),
+        Segment(Point(500 * SCALE, 400 * SCALE), Point(500 * SCALE, 200 * SCALE)),
     ]
 
     geometry.arcs = [
-        Arc(Point(300, 200), Point(500, 200), Point(400, 100)),
-        Arc(Point(500, 400), Point(300, 400), Point(400, 500)),
+        Arc(Point(300 * SCALE, 200 * SCALE), Point(500 * SCALE, 200 * SCALE), Point(400 * SCALE, 100 * SCALE)),
+        Arc(Point(500 * SCALE, 400 * SCALE), Point(300 * SCALE, 400 * SCALE), Point(400 * SCALE, 500 * SCALE)),
     ]
 
     constraints += [
