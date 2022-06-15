@@ -73,8 +73,8 @@ CONSTRAINT_FUNCTION = {
     CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS:    equal_length_or_radius,
     CONSTRAINT_TYPES.LENGTH:                    length,
     CONSTRAINT_TYPES.FIXED:                     None,
-    CONSTRAINT_TYPES.HORIZONTALITY:             horizontality,
-    CONSTRAINT_TYPES.VERTICALITY:               verticality,
+    CONSTRAINT_TYPES.HORIZONTALITY:             None,
+    CONSTRAINT_TYPES.VERTICALITY:               None,
     CONSTRAINT_TYPES.TANGENCY:                  tangency,
     CONSTRAINT_TYPES.CONCENTRICITY:             concentricity,
 }
@@ -90,8 +90,8 @@ CONSTRAINT_REQUIREMENTS = {
     CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS:    [(QUANTITY.MORE_THAN_ONE, Segment), (QUANTITY.MORE_THAN_ONE, Arc)],
     # constraint_types.LENGTH:                  (),
     CONSTRAINT_TYPES.FIXED:                     [(QUANTITY.MORE_THAN_ZERO, Point)],
-    CONSTRAINT_TYPES.HORIZONTALITY:             [(QUANTITY.MORE_THAN_ZERO, Segment), (QUANTITY.MORE_THAN_ONE, Point)],
-    CONSTRAINT_TYPES.VERTICALITY:               [(QUANTITY.MORE_THAN_ZERO, Segment), (QUANTITY.MORE_THAN_ONE, Point)],
+    CONSTRAINT_TYPES.HORIZONTALITY:             [(QUANTITY.MORE_THAN_ONE, Point)],
+    CONSTRAINT_TYPES.VERTICALITY:               [(QUANTITY.MORE_THAN_ONE, Point)],
     CONSTRAINT_TYPES.TANGENCY:                  [(Arc, Segment), (Arc, Arc)],
     CONSTRAINT_TYPES.CONCENTRICITY:             [(Arc, Arc)]
 }

@@ -13,6 +13,8 @@ def constraints_changed_by_GUI():
 
 def geometry_changed_by_solver():
     global gui
+    global solver
+    gui.degrees_of_freedom = solver.degrees_of_freedom
     gui.redraw_geometry()
 
 geometry = Geometry()

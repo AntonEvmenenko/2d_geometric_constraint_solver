@@ -1,4 +1,5 @@
 from enum import Enum, auto
+import itertools
 from scipy.optimize import minimize
 from copy import copy
 from constraints.constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPES
@@ -6,15 +7,17 @@ from geometry import Geometry
 from geometric_primitives.point import Point, distance_p2p
 from geometric_primitives.segment import Segment
 
-def point_to_vars(p: Point):
-    return [p.x, p.y]
-
-def point_from_vars(p: Point, vars):
-    p.x, p.y = vars
-
 class SOLVER_TYPE(Enum):
     SLSQP   = auto()
     IPOPT   = auto()
+
+class SPECIAL_LINK(Enum):
+    BASE    = -1
+    ORPHAN  = -2
+    FIXED   = -3
+
+    def __repr__(self):
+        return str(self.value)
 
 class Solver:
     def __init__(self, geometry: Geometry, geometry_changed_callback, constraints):
@@ -23,28 +26,92 @@ class Solver:
 
         self.constraints = constraints
 
-        self.inactive_constraints = set()
-
         self.solver_type = SOLVER_TYPE.SLSQP
+
+        self.degrees_of_freedom = 0
+
+    def get_base_id(self, id):
+        subs_id = self.links[id]
+        return id if subs_id == SPECIAL_LINK.BASE else subs_id
+
+    def process_constraints_that_could_be_solved_by_substitution(self):
+        points = list(itertools.chain.from_iterable([entity.points() for entity in (self.geometry.segments + self.geometry.arcs)]))
+
+        self.point_to_id = {}
+        self.values = []
+        for i, point in enumerate(points):
+            self.point_to_id[point] = i
+            self.values += [point.x, point.y]
+
+        self.number_of_primary_varialbes = len(self.values)
+        self.links = [SPECIAL_LINK.BASE] * self.number_of_primary_varialbes
+
+        def hv_helper(constraint, type):
+            link = SPECIAL_LINK.BASE
+            for point in constraint.entities:
+                id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPES.HORIZONTALITY else 0)
+                if self.links[id] != SPECIAL_LINK.BASE and link == SPECIAL_LINK.BASE:
+                    link = self.links[id]
+                    break
+
+            if link == SPECIAL_LINK.BASE:
+                link = len(self.links)
+                self.links.append(SPECIAL_LINK.BASE)
+
+                for entity in constraint.entities:
+                    if not entity is self.active_point:
+                        self.values.append(entity.y if type == CONSTRAINT_TYPES.HORIZONTALITY else entity.x)
+                        break
+
+            for point in constraint.entities:
+                id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPES.HORIZONTALITY else 0)
+
+                existing_link = self.links[id]
+                if existing_link != SPECIAL_LINK.BASE:
+                    for i, _ in enumerate(self.links):
+                        if self.links[i] == existing_link:
+                            self.links[i] = link
+                else:
+                    self.links[id] = link
+
+        for constraint in self.constraints:
+            if constraint.type == CONSTRAINT_TYPES.COINCIDENCE:
+                hv_helper(constraint, CONSTRAINT_TYPES.HORIZONTALITY)
+                hv_helper(constraint, CONSTRAINT_TYPES.VERTICALITY)
+
+            elif constraint.type == CONSTRAINT_TYPES.HORIZONTALITY:
+                hv_helper(constraint, CONSTRAINT_TYPES.HORIZONTALITY)
+
+            elif constraint.type == CONSTRAINT_TYPES.VERTICALITY:
+                hv_helper(constraint, CONSTRAINT_TYPES.VERTICALITY)
+
+        for constraint in self.constraints:
+            if constraint.type == CONSTRAINT_TYPES.FIXED:
+                for point in constraint.entities:
+                    id = self.point_to_id[point]
+                    id_x, id_y = id * 2, id * 2 + 1
+
+                    self.links[self.get_base_id(id_x)] = SPECIAL_LINK.FIXED
+                    self.links[self.get_base_id(id_y)] = SPECIAL_LINK.FIXED
+
+        self.number_of_secondary_variables = len(self.links) - self.number_of_primary_varialbes
+
+        orphan_vars = set(range(self.number_of_primary_varialbes, self.number_of_primary_varialbes + self.number_of_secondary_variables))
+
+        for i in range(self.number_of_primary_varialbes):
+            orphan_vars.discard(self.links[i])
+
+        for i in orphan_vars:
+            self.links[i] = SPECIAL_LINK.ORPHAN
+
+        # print (f'links[{len(self.links)}]: {self.links}')
 
     def geometry_to_vars(self):
         vars = []
-        processed_virtual_points = set()
 
-        for entity in (self.geometry.segments + self.geometry.arcs):
-            for point in entity.points():
-                if (point in self.fixed_points):
-                    continue
-                elif (point in self.point_to_virtual_point):
-                    virtual_point = self.point_to_virtual_point[point]
-
-                    if (virtual_point in processed_virtual_points) or (virtual_point in self.fixed_points):
-                        continue
-
-                    vars += point_to_vars(virtual_point)
-                    processed_virtual_points.add(virtual_point)
-                else:
-                    vars += point_to_vars(point)
+        for i, value in enumerate(self.values):
+            if self.links[i] == SPECIAL_LINK.BASE:
+                vars.append(value)
 
         for arc in self.geometry.arcs:
             vars.append(arc.d)
@@ -52,35 +119,33 @@ class Solver:
         return vars
 
     def geometry_from_vars(self, vars):
-        position = 0
-
-        processed_virtual_points = set()
+        vars_i = 0
+        for i, _ in enumerate(self.values):
+            if self.links[i] == SPECIAL_LINK.BASE:
+                self.values[i] = vars[vars_i]
+                vars_i += 1
 
         for entity in (self.geometry.segments + self.geometry.arcs):
             for point in entity.points():
-                if (point in self.fixed_points):
-                    continue
-                elif (point in self.point_to_virtual_point):
-                    virtual_point = self.point_to_virtual_point[point]
+                id = self.point_to_id[point]
+                id_x, id_y = id * 2, id * 2 + 1
 
-                    point.x, point.y = virtual_point.x, virtual_point.y
+                temp = (SPECIAL_LINK.BASE, SPECIAL_LINK.FIXED)
 
-                    if (virtual_point in self.fixed_points) or (virtual_point in processed_virtual_points):
-                        continue
+                def helper(id):
+                    if self.links[id] in temp:
+                        return self.values[id]
+                    if self.links[self.links[id]] in temp:
+                        return self.values[self.links[id]]
+                    return None
 
-                    vars_length = len(point_to_vars(virtual_point))
-                    point_from_vars(virtual_point, vars[position : position + vars_length])
-                    point.x, point.y = virtual_point.x, virtual_point.y
-                    position += vars_length
-                    processed_virtual_points.add(virtual_point)
-                else:
-                    vars_length = len(point_to_vars(point))
-                    point_from_vars(point, vars[position : position + vars_length])
-                    position += vars_length
+                x, y = helper(id_x), helper(id_y)
+
+                point.x, point.y = point.x if x is None else x, point.y if y is None else y
 
         for arc in self.geometry.arcs:
-            arc.d = vars[position]
-            position += 1
+            arc.d = vars[vars_i]
+            vars_i += 1
 
     def f(self, x):
         self.geometry_from_vars(x)
@@ -109,75 +174,51 @@ class Solver:
             if function is None:
                 continue
 
-            f += function(*constraint.entities)
+            f += function(*constraint. entities)
 
         # print (f'x: {x}')
-        # print (f'c: {f}')
+        # print (f'c [{len(f)}]: {f}')
 
         return f
-
-    def create_virtual_points(self):
-        self.point_to_virtual_point = {}
-
-        for constraint in self.constraints:
-            if constraint.type == CONSTRAINT_TYPES.COINCIDENCE:
-                virtual_point = Point(constraint.entities[0].x, constraint.entities[0].y)
-
-                for point in constraint.entities:
-                    if point in self.point_to_virtual_point:
-                        virtual_point = self.point_to_virtual_point[point]
-                        break
-
-                for point in constraint.entities:
-                    self.point_to_virtual_point[point] = virtual_point
-
-                if point is self.active_point:
-                    virtual_point.x, virtual_point.y = point.x, point.y
-
-    def create_fixed_points(self):
-        self.fixed_points = set()
-
-        for constraint in self.constraints:
-            if constraint.type == CONSTRAINT_TYPES.FIXED:
-                for point in constraint.entities:
-                    if point in self.point_to_virtual_point:
-                        virtual_point = self.point_to_virtual_point[point]
-                        self.fixed_points.add(virtual_point)
-                    else:
-                        self.fixed_points.add(point)
 
     def detect_inactive_constraints(self):
         def is_fixed_entity(entity):
             if isinstance(entity, Point):
-                return entity in self.fixed_points or self.point_to_virtual_point.get(entity) in self.fixed_points
+                id = self.point_to_id[entity]
+                id_x, id_y = id * 2, id * 2 + 1
+                return self.links[self.get_base_id(id_x)] == SPECIAL_LINK.FIXED and self.links[self.get_base_id(id_y)] == SPECIAL_LINK.FIXED
             elif isinstance(entity, Segment):
                 return is_fixed_entity(entity.p1) and is_fixed_entity(entity.p2)
             else:
                 return False
 
+        inactive_constraints = set()
+
         for constraint in self.constraints:
-            if constraint in self.inactive_constraints:
+            if constraint in inactive_constraints:
                 continue
             if CONSTRAINT_FUNCTION[constraint.type] is None:
                 continue
             if all(is_fixed_entity(entity) for entity in constraint.entities):
-                self.inactive_constraints.add(constraint)
+                inactive_constraints.add(constraint)
+
+        return inactive_constraints
 
     def solve(self, active_point):
         self.active_point = active_point
         self.active_point_copy = copy(active_point)
 
-        self.create_virtual_points()
-        self.create_fixed_points()
+        self.process_constraints_that_could_be_solved_by_substitution()
+        self.inactive_constraints = self.detect_inactive_constraints()
 
         initial_guess = self.geometry_to_vars()
 
-        if len(initial_guess) == 0:
+        self.degrees_of_freedom = len(initial_guess)
+
+        if self.degrees_of_freedom == 0:
             return
 
-        self.detect_inactive_constraints()
-
-        # print (f'initial_guess ({len(initial_guess)}) = {initial_guess}')
+        # print (f'initial_guess[{len(initial_guess)}]: {initial_guess}')
 
         solution = None
 

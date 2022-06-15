@@ -11,12 +11,16 @@ from gui.constraint_icon import ConstraintIcon
 
 USER_SELECTING_RADUIS   = 10
 
-BUTTON_ICON_SIZE        = 64
-CONSTRAINT_ICON_SIZE    = 32
-CONSTRAINT_ICON_SPACING = 40
-LINE_TICKNESS           = 6
-POINT_RADIUS            = 8
-BOTTOM_TEXT_OFFSET      = 50
+BUTTON_ICON_SIZE        = 32
+CONSTRAINT_ICON_SIZE    = 20
+CONSTRAINT_ICON_SPACING = 25
+LINE_TICKNESS           = 3
+POINT_RADIUS            = 4
+TEXT_BOTTOM_OFFSET      = 30
+TEXT_SIDE_OFFSET        = 15
+MENU_TOP_OFFSET         = 10
+MENU_SIDE_OFFSET        = 10
+
 
 class GUI(tk.Frame):
     def __init__(self, root, geometry: Geometry, geometry_changed_callback, constraints, constraints_changed_callback):
@@ -30,7 +34,7 @@ class GUI(tk.Frame):
         self.constraints = constraints
         self.constraints_changed_callback = constraints_changed_callback
 
-        self.canvas = tk.Canvas(self, width=1920, height=1080, background='white')
+        self.canvas = tk.Canvas(self, width=640, height=480, background='white', bd=0, highlightthickness=0)
         self.canvas.grid(row=0, column=0, sticky="nsew")
 
         self.entity_to_drawn_entity = {}
@@ -42,6 +46,8 @@ class GUI(tk.Frame):
         self.points_for_new_geometry = []
         self.adding_segment = False
         self.adding_arc = False
+
+        self.degrees_of_freedom = 0
 
         # could be Segment, Arc, Point or Constraint
         self.selected_entities = set()
@@ -66,7 +72,8 @@ class GUI(tk.Frame):
 
     def set_text_info(self, text):
         self.text_info.config(text = text)
-        self.text_info.place(x = self.winfo_width() - len(text) * 12 - 15, y = self.winfo_height() - BOTTOM_TEXT_OFFSET)
+        self.update()
+        self.text_info.place(x = self.winfo_width() - self.text_info.winfo_width() - TEXT_SIDE_OFFSET, y = self.winfo_height() - TEXT_BOTTOM_OFFSET)
 
     def create_top_menu(self):
         menubar = tk.Menu(self.root)
@@ -278,15 +285,19 @@ class GUI(tk.Frame):
 
     # external events handlers
 
-    def on_resize(self, event):
-        # TODO: refactor
-        self.canvas.config(width = event.width - 2, height = event.height - 2)
+    def on_resize(self, event, repeat = True):
+        self.canvas.config(width = event.width, height = event.height)
         
-        self.menu_left.place(x = 10, y = 10)
-        self.menu_right.place(x = event.width - BUTTON_ICON_SIZE - 15, y = 10)
+        self.menu_left.place(x = MENU_SIDE_OFFSET, y = MENU_TOP_OFFSET)
+        self.menu_right.place(x = event.width - self.menu_right.winfo_width() - MENU_SIDE_OFFSET, y = MENU_TOP_OFFSET)
 
-        self.text_hint.place(x = 10, y = event.height - BOTTOM_TEXT_OFFSET)
-        # pass
+        self.text_hint.place(x = TEXT_SIDE_OFFSET, y = event.height - TEXT_BOTTOM_OFFSET)
+
+        self.redraw_geometry()
+
+        if repeat:
+            self.update()
+            self.on_resize(event, False)
 
     # screen buttons handlers
 
@@ -417,7 +428,7 @@ class GUI(tk.Frame):
             drawn_constraint_icon.set_background_color(color)
 
         self.update_constraint_icons()
-        self.set_text_info(f'e: {len(self.geometry.segments) + len(self.geometry.arcs)} | c: {len(self.constraints)}')
+        self.set_text_info(f'e: {len(self.geometry.segments) + len(self.geometry.arcs)} | c: {len(self.constraints)} | d: {self.degrees_of_freedom}')
 
     # elements drawing (constraints)
 
