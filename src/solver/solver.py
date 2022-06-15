@@ -58,10 +58,8 @@ class Solver:
                 link = len(self.links)
                 self.links.append(SPECIAL_LINK.BASE)
 
-                for entity in constraint.entities:
-                    if not entity is self.active_point:
-                        self.values.append(entity.y if type == CONSTRAINT_TYPES.HORIZONTALITY else entity.x)
-                        break
+                entity = self.active_point if self.active_point in constraint.entities else constraint.entities[0]
+                self.values.append(entity.y if type == CONSTRAINT_TYPES.HORIZONTALITY else entity.x)
 
             for point in constraint.entities:
                 id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPES.HORIZONTALITY else 0)
