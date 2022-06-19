@@ -1,5 +1,5 @@
 from constraints.constraint import Constraint
-from constraints.constraints import CONSTRAINT_TYPES
+from constraints.constraints import CONSTRAINT_TYPE
 from geometric_primitives.point import Point
 from geometric_primitives.segment import Segment
 from geometric_primitives.arc import Arc
@@ -23,20 +23,20 @@ def Lines(geometry, constraints):
     ]
 
     constraints += [
-        Constraint([geometry.segments[0].p1, geometry.segments[2].p2], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPES.COINCIDENCE),
+        Constraint([geometry.segments[0].p1, geometry.segments[2].p2], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPE.COINCIDENCE),
 
-        Constraint([geometry.segments[0].p2, geometry.segments[3].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[3].p2, geometry.segments[4].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[4].p2, geometry.segments[1].p2], CONSTRAINT_TYPES.COINCIDENCE),
+        Constraint([geometry.segments[0].p2, geometry.segments[3].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[3].p2, geometry.segments[4].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[4].p2, geometry.segments[1].p2], CONSTRAINT_TYPE.COINCIDENCE),
 
-        Constraint([geometry.segments[1], geometry.segments[2]], CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS),
-        Constraint([geometry.segments[3], geometry.segments[4]], CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS),
-        Constraint([geometry.segments[3], geometry.segments[1]], CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS),
+        Constraint([geometry.segments[1], geometry.segments[2]], CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
+        Constraint([geometry.segments[3], geometry.segments[4]], CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
+        Constraint([geometry.segments[3], geometry.segments[1]], CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
 
-        Constraint([geometry.segments[0].p1], CONSTRAINT_TYPES.FIXED),
-        Constraint([geometry.segments[0].p2], CONSTRAINT_TYPES.FIXED),
+        Constraint([geometry.segments[0].p1], CONSTRAINT_TYPE.FIXED),
+        Constraint([geometry.segments[0].p2], CONSTRAINT_TYPE.FIXED),
     ]
 
 def CutSlot(geometry, constraints):
@@ -53,14 +53,14 @@ def CutSlot(geometry, constraints):
     ]
 
     constraints += [
-        Constraint([geometry.segments[0], geometry.arcs[0]], CONSTRAINT_TYPES.TANGENCY),
-        Constraint([geometry.segments[2], geometry.arcs[0]], CONSTRAINT_TYPES.TANGENCY),
+        Constraint([geometry.segments[0], geometry.arcs[0]], CONSTRAINT_TYPE.TANGENCY),
+        Constraint([geometry.segments[2], geometry.arcs[0]], CONSTRAINT_TYPE.TANGENCY),
 
-        Constraint([geometry.segments[0].p1, geometry.arcs[0].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[2].p2, geometry.arcs[0].p2], CONSTRAINT_TYPES.COINCIDENCE),
+        Constraint([geometry.segments[0].p1, geometry.arcs[0].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[2].p2, geometry.arcs[0].p2], CONSTRAINT_TYPE.COINCIDENCE),
 
-        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPES.COINCIDENCE),
+        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPE.COINCIDENCE),
     ]
 
 def Slot(geometry, constraints):
@@ -77,16 +77,16 @@ def Slot(geometry, constraints):
     ]
 
     constraints += [
-        Constraint([geometry.segments[0], geometry.arcs[0]], CONSTRAINT_TYPES.TANGENCY),
-        Constraint([geometry.segments[0], geometry.arcs[1]], CONSTRAINT_TYPES.TANGENCY),
-        Constraint([geometry.segments[1], geometry.arcs[0]], CONSTRAINT_TYPES.TANGENCY),
-        Constraint([geometry.segments[1], geometry.arcs[1]], CONSTRAINT_TYPES.TANGENCY),
+        Constraint([geometry.segments[0], geometry.arcs[0]], CONSTRAINT_TYPE.TANGENCY),
+        Constraint([geometry.segments[0], geometry.arcs[1]], CONSTRAINT_TYPE.TANGENCY),
+        Constraint([geometry.segments[1], geometry.arcs[0]], CONSTRAINT_TYPE.TANGENCY),
+        Constraint([geometry.segments[1], geometry.arcs[1]], CONSTRAINT_TYPE.TANGENCY),
 
-        Constraint([geometry.segments[0].p1, geometry.arcs[0].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[0].p2, geometry.arcs[1].p2], CONSTRAINT_TYPES.COINCIDENCE),
+        Constraint([geometry.segments[0].p1, geometry.arcs[0].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[0].p2, geometry.arcs[1].p2], CONSTRAINT_TYPE.COINCIDENCE),
 
-        Constraint([geometry.segments[1].p1, geometry.arcs[1].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[1].p2, geometry.arcs[0].p2], CONSTRAINT_TYPES.COINCIDENCE),
+        Constraint([geometry.segments[1].p1, geometry.arcs[1].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[1].p2, geometry.arcs[0].p2], CONSTRAINT_TYPE.COINCIDENCE),
     ]
 
 def Rect(geometry, constraints):
@@ -100,10 +100,10 @@ def Rect(geometry, constraints):
     ]
 
     constraints += [
-        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[2].p2, geometry.segments[3].p1], CONSTRAINT_TYPES.COINCIDENCE),
-        Constraint([geometry.segments[3].p2, geometry.segments[0].p1], CONSTRAINT_TYPES.COINCIDENCE),
+        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[2].p2, geometry.segments[3].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[3].p2, geometry.segments[0].p1], CONSTRAINT_TYPE.COINCIDENCE),
     ]
 
 examples = [

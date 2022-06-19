@@ -79,9 +79,12 @@ class GUI(tk.Frame):
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
         file_menu = tk.Menu(menubar, tearoff="off")
+        file_menu.add_command(label='Clear', command=self.clear_everything)
+        menubar.add_cascade(label="File", menu=file_menu)
+        examples_menu = tk.Menu(menubar, tearoff="off")
         for example in examples:
-            file_menu.add_command(label=f'{example.__name__}', command=lambda example = example: self.load_example(example))
-        menubar.add_cascade(label="Examples", menu=file_menu)
+            examples_menu.add_command(label=f'{example.__name__}', command=lambda example = example: self.load_example(example))
+        menubar.add_cascade(label="Examples", menu=examples_menu)
 
     def create_side_menus(self):
         self.menu_left = tk.Frame(self)
@@ -123,22 +126,22 @@ class GUI(tk.Frame):
         self.constraint_icon = {}
 
         icon_file_name = {
-            CONSTRAINT_TYPES.COINCIDENCE:            "coincidence",
-            CONSTRAINT_TYPES.PARALLELITY:            "parallelity",
-            CONSTRAINT_TYPES.PERPENDICULARITY:       "perpendicularity",
-            CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS: "equal_length",
-            CONSTRAINT_TYPES.LENGTH:                 "length",
-            CONSTRAINT_TYPES.FIXED:                  "fixed",
-            CONSTRAINT_TYPES.HORIZONTALITY:          "horizontality",
-            CONSTRAINT_TYPES.VERTICALITY:            "verticality",
-            CONSTRAINT_TYPES.TANGENCY:               "tangency",
-            CONSTRAINT_TYPES.CONCENTRICITY:          "concentricity",
+            CONSTRAINT_TYPE.COINCIDENCE:            "coincidence",
+            CONSTRAINT_TYPE.PARALLELITY:            "parallelity",
+            CONSTRAINT_TYPE.PERPENDICULARITY:       "perpendicularity",
+            CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS: "equal_length",
+            CONSTRAINT_TYPE.FIXED:                  "fixed",
+            CONSTRAINT_TYPE.HORIZONTALITY:          "horizontality",
+            CONSTRAINT_TYPE.VERTICALITY:            "verticality",
+            CONSTRAINT_TYPE.TANGENCY:               "tangency",
+            CONSTRAINT_TYPE.CONCENTRICITY:          "concentricity",
+            # CONSTRAINT_TYPE.LENGTH:                 "length",
         }
 
         for icon_size in icon_sizes:
             self.constraint_icon[icon_size] = {}
 
-            for constraint_type in CONSTRAINT_TYPES:
+            for constraint_type in CONSTRAINT_TYPE:
                 self.constraint_icon[icon_size][constraint_type] = tk.PhotoImage(file = f"icons/{icon_size}x{icon_size}/{icon_file_name[constraint_type]}.png")
 
     def create_buttons(self):
@@ -156,15 +159,15 @@ class GUI(tk.Frame):
             return button
 
         self.constraint_button = {
-            CONSTRAINT_TYPES.COINCIDENCE:               create_menu_right_constraint_button(0, CONSTRAINT_TYPES.COINCIDENCE),
-            CONSTRAINT_TYPES.FIXED:                     create_menu_right_constraint_button(1, CONSTRAINT_TYPES.FIXED),
-            CONSTRAINT_TYPES.PERPENDICULARITY:          create_menu_right_constraint_button(2, CONSTRAINT_TYPES.PERPENDICULARITY),
-            CONSTRAINT_TYPES.PARALLELITY:               create_menu_right_constraint_button(3, CONSTRAINT_TYPES.PARALLELITY),
-            CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS:    create_menu_right_constraint_button(4, CONSTRAINT_TYPES.EQUAL_LENGTH_OR_RADIUS),
-            CONSTRAINT_TYPES.VERTICALITY:               create_menu_right_constraint_button(5, CONSTRAINT_TYPES.VERTICALITY),
-            CONSTRAINT_TYPES.HORIZONTALITY:             create_menu_right_constraint_button(6, CONSTRAINT_TYPES.HORIZONTALITY),
-            CONSTRAINT_TYPES.TANGENCY:                  create_menu_right_constraint_button(7, CONSTRAINT_TYPES.TANGENCY),
-            CONSTRAINT_TYPES.CONCENTRICITY:             create_menu_right_constraint_button(8, CONSTRAINT_TYPES.CONCENTRICITY),
+            CONSTRAINT_TYPE.COINCIDENCE:               create_menu_right_constraint_button(0, CONSTRAINT_TYPE.COINCIDENCE),
+            CONSTRAINT_TYPE.FIXED:                     create_menu_right_constraint_button(1, CONSTRAINT_TYPE.FIXED),
+            CONSTRAINT_TYPE.PERPENDICULARITY:          create_menu_right_constraint_button(2, CONSTRAINT_TYPE.PERPENDICULARITY),
+            CONSTRAINT_TYPE.PARALLELITY:               create_menu_right_constraint_button(3, CONSTRAINT_TYPE.PARALLELITY),
+            CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS:    create_menu_right_constraint_button(4, CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
+            CONSTRAINT_TYPE.VERTICALITY:               create_menu_right_constraint_button(5, CONSTRAINT_TYPE.VERTICALITY),
+            CONSTRAINT_TYPE.HORIZONTALITY:             create_menu_right_constraint_button(6, CONSTRAINT_TYPE.HORIZONTALITY),
+            CONSTRAINT_TYPE.TANGENCY:                  create_menu_right_constraint_button(7, CONSTRAINT_TYPE.TANGENCY),
+            CONSTRAINT_TYPE.CONCENTRICITY:             create_menu_right_constraint_button(8, CONSTRAINT_TYPE.CONCENTRICITY),
         }
 
     # mouse and keyboard handlers
@@ -253,7 +256,7 @@ class GUI(tk.Frame):
             return
 
         for constraint in self.constraints:
-            if (constraint.type == CONSTRAINT_TYPES.FIXED) and (self.selected_point in constraint.entities):
+            if (constraint.type == CONSTRAINT_TYPE.FIXED) and (self.selected_point in constraint.entities):
                 return
 
         self.selected_point_moved = True
@@ -442,7 +445,7 @@ class GUI(tk.Frame):
             for point in entity.points():
                 if point in constraint.entities:
                     if not (point, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
-                        exists_already = (constraint.type == CONSTRAINT_TYPES.COINCIDENCE) and any(c is constraint for (p, c) in self.entity_and_constraint_to_drawn_constraint_icon)
+                        exists_already = (constraint.type == CONSTRAINT_TYPE.COINCIDENCE) and any(c is constraint for (p, c) in self.entity_and_constraint_to_drawn_constraint_icon)
                         if not exists_already:
                             self.entity_and_constraint_to_drawn_constraint_icon[(point, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type], CONSTRAINT_ICON_SIZE)
 
@@ -534,7 +537,7 @@ class GUI(tk.Frame):
     # misc
 
     def add_constraint(self, constraint: Constraint):
-        new_constraints = add_constraint(self.constraints, constraint.type, constraint.entities)
+        new_constraints = self.constraints.add_constraint(constraint.type, constraint.entities)
         for constraint in new_constraints:
             self.add_constraint_icon(constraint)
 
@@ -556,12 +559,17 @@ class GUI(tk.Frame):
         for button in self.constraint_button.values():
             button.configure(state = tk.DISABLED)
 
-        for constraint_type in get_available_constraints(self.selected_entities):
+        for constraint_type in Constraints.get_available_constraints(self.selected_entities):
             self.constraint_button[constraint_type].configure(state = tk.NORMAL)
 
-    def load_example(self, example):
+    def clear_everything(self):
         self.remove_geometry()
         self.remove_constraint_icons()
+        self.geometry.clear()
+        self.constraints.clear()
+
+    def load_example(self, example):
+        self.clear_everything()
         example(self.geometry, self.constraints)
         self.add_geometry()
         self.add_constraint_icons()
@@ -580,7 +588,7 @@ class GUI(tk.Frame):
                 entities_to_be_removed.append(entity.p2)
                 self.selected_entities.remove(entity)
 
-        useless_constraints = get_useless_constraints(self.constraints, entities_to_be_removed)
+        useless_constraints = self.constraints.get_useless_constraints(entities_to_be_removed)
         constraints_to_be_removed = set(filter(lambda entity: isinstance(entity, Constraint), self.selected_entities))
 
         for constraint in (constraints_to_be_removed.union(useless_constraints)):

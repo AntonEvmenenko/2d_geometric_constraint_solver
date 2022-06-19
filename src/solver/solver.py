@@ -2,7 +2,7 @@ from enum import Enum, auto
 import itertools
 from scipy.optimize import minimize
 from copy import copy
-from constraints.constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPES, Constraints
+from constraints.constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPE, Constraints
 from geometry import Geometry
 from geometric_primitives.point import Point, distance_p2p
 from geometric_primitives.segment import Segment
@@ -49,7 +49,7 @@ class Solver:
         def hv_helper(constraint, type):
             link = SPECIAL_LINK.BASE
             for point in constraint.entities:
-                id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPES.HORIZONTALITY else 0)
+                id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPE.HORIZONTALITY else 0)
                 if self.links[id] != SPECIAL_LINK.BASE and link == SPECIAL_LINK.BASE:
                     link = self.links[id]
                     break
@@ -60,11 +60,11 @@ class Solver:
 
                 for entity in constraint.entities:
                     if not entity is self.active_point:
-                        self.values.append(entity.y if type == CONSTRAINT_TYPES.HORIZONTALITY else entity.x)
+                        self.values.append(entity.y if type == CONSTRAINT_TYPE.HORIZONTALITY else entity.x)
                         break
 
             for point in constraint.entities:
-                id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPES.HORIZONTALITY else 0)
+                id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPE.HORIZONTALITY else 0)
 
                 existing_link = self.links[id]
                 if existing_link != SPECIAL_LINK.BASE:
@@ -75,18 +75,18 @@ class Solver:
                     self.links[id] = link
 
         for constraint in self.constraints:
-            if constraint.type == CONSTRAINT_TYPES.COINCIDENCE:
-                hv_helper(constraint, CONSTRAINT_TYPES.HORIZONTALITY)
-                hv_helper(constraint, CONSTRAINT_TYPES.VERTICALITY)
+            if constraint.type == CONSTRAINT_TYPE.COINCIDENCE:
+                hv_helper(constraint, CONSTRAINT_TYPE.HORIZONTALITY)
+                hv_helper(constraint, CONSTRAINT_TYPE.VERTICALITY)
 
-            elif constraint.type == CONSTRAINT_TYPES.HORIZONTALITY:
-                hv_helper(constraint, CONSTRAINT_TYPES.HORIZONTALITY)
+            elif constraint.type == CONSTRAINT_TYPE.HORIZONTALITY:
+                hv_helper(constraint, CONSTRAINT_TYPE.HORIZONTALITY)
 
-            elif constraint.type == CONSTRAINT_TYPES.VERTICALITY:
-                hv_helper(constraint, CONSTRAINT_TYPES.VERTICALITY)
+            elif constraint.type == CONSTRAINT_TYPE.VERTICALITY:
+                hv_helper(constraint, CONSTRAINT_TYPE.VERTICALITY)
 
         for constraint in self.constraints:
-            if constraint.type == CONSTRAINT_TYPES.FIXED:
+            if constraint.type == CONSTRAINT_TYPE.FIXED:
                 for point in constraint.entities:
                     id = self.point_to_id[point]
                     id_x, id_y = id * 2, id * 2 + 1
@@ -225,8 +225,8 @@ class Solver:
         self.inactive_constraints = self.detect_inactive_constraints()
 
         self.constraints.inactive_constraints = len(self.inactive_constraints)
-        self.constraints.solved_by_substitution_constraints = len(list(filter(lambda i: i.type in (CONSTRAINT_TYPES.COINCIDENCE, CONSTRAINT_TYPES.VERTICALITY, CONSTRAINT_TYPES.HORIZONTALITY), self.constraints)))
-        self.constraints.fixed_constraints = len(list(filter(lambda i: i.type == CONSTRAINT_TYPES.FIXED, self.constraints)))
+        self.constraints.solved_by_substitution_constraints = len(list(filter(lambda i: i.type in (CONSTRAINT_TYPE.COINCIDENCE, CONSTRAINT_TYPE.VERTICALITY, CONSTRAINT_TYPE.HORIZONTALITY), self.constraints)))
+        self.constraints.fixed_constraints = len(list(filter(lambda i: i.type == CONSTRAINT_TYPE.FIXED, self.constraints)))
 
         initial_guess = self.geometry_to_vars()
 
