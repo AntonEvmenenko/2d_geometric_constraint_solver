@@ -16,7 +16,7 @@ CONSTRAINT_ICON_SIZE    = 20
 CONSTRAINT_ICON_SPACING = 25
 LINE_TICKNESS           = 3
 POINT_RADIUS            = 4
-TEXT_BOTTOM_OFFSET      = 30
+TEXT_BOTTOM_OFFSET      = 15
 TEXT_SIDE_OFFSET        = 15
 MENU_TOP_OFFSET         = 10
 MENU_SIDE_OFFSET        = 10
@@ -31,7 +31,7 @@ class GUI(tk.Frame):
         self.geometry = geometry
         self.geometry_changed_callback = geometry_changed_callback
 
-        self.constraints = constraints
+        self.constraints: Constraints = constraints
         self.constraints_changed_callback = constraints_changed_callback
 
         self.canvas = tk.Canvas(self, width=640, height=480, background='white', bd=0, highlightthickness=0)
@@ -73,7 +73,7 @@ class GUI(tk.Frame):
     def set_text_info(self, text):
         self.text_info.config(text = text)
         self.update()
-        self.text_info.place(x = self.winfo_width() - self.text_info.winfo_width() - TEXT_SIDE_OFFSET, y = self.winfo_height() - TEXT_BOTTOM_OFFSET)
+        self.text_info.place(x = self.winfo_width() - self.text_info.winfo_width() - TEXT_SIDE_OFFSET, y = self.winfo_height() - self.text_info.winfo_height() - TEXT_BOTTOM_OFFSET)
 
     def create_top_menu(self):
         menubar = tk.Menu(self.root)
@@ -174,6 +174,7 @@ class GUI(tk.Frame):
             'Delete': self.delete_selected_entities,
             's': self.on_add_segment_button_clicked,
             'a': self.on_add_arc_button_clicked,
+            'i': self.print_detailed_info,
         }.get(event.keysym, lambda : None)()
 
     def on_left_button_pressed(self, event):
@@ -291,7 +292,7 @@ class GUI(tk.Frame):
         self.menu_left.place(x = MENU_SIDE_OFFSET, y = MENU_TOP_OFFSET)
         self.menu_right.place(x = event.width - self.menu_right.winfo_width() - MENU_SIDE_OFFSET, y = MENU_TOP_OFFSET)
 
-        self.text_hint.place(x = TEXT_SIDE_OFFSET, y = event.height - TEXT_BOTTOM_OFFSET)
+        self.text_hint.place(x = TEXT_SIDE_OFFSET, y = event.height - self.text_hint.winfo_height() - TEXT_BOTTOM_OFFSET)
 
         self.redraw_geometry()
 
@@ -533,8 +534,9 @@ class GUI(tk.Frame):
     # misc
 
     def add_constraint(self, constraint: Constraint):
-        self.constraints.append(constraint)
-        self.add_constraint_icon(constraint)
+        new_constraints = add_constraint(self.constraints, constraint.type, constraint.entities)
+        for constraint in new_constraints:
+            self.add_constraint_icon(constraint)
 
     def remove_constraint(self, constraint: Constraint):
         self.remove_constraint_icon(constraint)
@@ -592,3 +594,13 @@ class GUI(tk.Frame):
         self.geometry_changed_callback(None)
         self.constraints_changed_callback()
         self.redraw_geometry()
+
+    def print_detailed_info(self):
+        print ("")
+        print ("==============================")
+        print (f"Constraints [{len(self.constraints)}]:")
+        print (f"\tFixed: {self.constraints.fixed_constraints}")
+        print (f"\tInactive: {self.constraints.inactive_constraints}")
+        print (f"\tSolved by substitution: {self.constraints.solved_by_substitution_constraints}")
+        print (f"\tSolved by solver: {len(self.constraints) - self.constraints.solved_by_substitution_constraints - self.constraints.fixed_constraints}")
+        print ("==============================")

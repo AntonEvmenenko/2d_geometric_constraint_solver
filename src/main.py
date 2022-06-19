@@ -1,4 +1,5 @@
 import tkinter as tk
+from constraints.constraints import Constraints
 from geometry import Geometry
 from gui.gui import GUI
 from solver.solver import Solver
@@ -18,7 +19,7 @@ def geometry_changed_by_solver():
     gui.redraw_geometry()
 
 geometry = Geometry()
-constraints = []
+constraints = Constraints()
 
 solver = Solver(geometry, geometry_changed_by_solver, constraints)
 

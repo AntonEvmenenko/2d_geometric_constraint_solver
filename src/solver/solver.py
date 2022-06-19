@@ -2,7 +2,7 @@ from enum import Enum, auto
 import itertools
 from scipy.optimize import minimize
 from copy import copy
-from constraints.constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPES
+from constraints.constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPES, Constraints
 from geometry import Geometry
 from geometric_primitives.point import Point, distance_p2p
 from geometric_primitives.segment import Segment
@@ -24,15 +24,15 @@ class Solver:
         self.geometry = geometry
         self.geometry_changed_callback = geometry_changed_callback
 
-        self.constraints = constraints
+        self.constraints: Constraints = constraints
 
         self.solver_type = SOLVER_TYPE.SLSQP
 
         self.degrees_of_freedom = 0
 
     def get_base_id(self, id):
-        subs_id = self.links[id]
-        return id if subs_id == SPECIAL_LINK.BASE else subs_id
+        temp = self.links[id]
+        return id if isinstance(temp, SPECIAL_LINK) else temp
 
     def process_constraints_that_could_be_solved_by_substitution(self):
         points = list(itertools.chain.from_iterable([entity.points() for entity in (self.geometry.segments + self.geometry.arcs)]))
@@ -58,8 +58,10 @@ class Solver:
                 link = len(self.links)
                 self.links.append(SPECIAL_LINK.BASE)
 
-                entity = self.active_point if self.active_point in constraint.entities else constraint.entities[0]
-                self.values.append(entity.y if type == CONSTRAINT_TYPES.HORIZONTALITY else entity.x)
+                for entity in constraint.entities:
+                    if not entity is self.active_point:
+                        self.values.append(entity.y if type == CONSTRAINT_TYPES.HORIZONTALITY else entity.x)
+                        break
 
             for point in constraint.entities:
                 id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPES.HORIZONTALITY else 0)
@@ -91,6 +93,19 @@ class Solver:
 
                     self.links[self.get_base_id(id_x)] = SPECIAL_LINK.FIXED
                     self.links[self.get_base_id(id_y)] = SPECIAL_LINK.FIXED
+
+        for constraint in self.constraints:
+             for point in constraint.entities:
+                if point is self.active_point:
+                    id = self.point_to_id[point]
+                    id_x, id_y = id * 2, id * 2 + 1
+                    base_id_x, base_id_y = self.get_base_id(id_x), self.get_base_id(id_y)
+
+                    if self.links[base_id_x] == SPECIAL_LINK.BASE:
+                        self.values[base_id_x] = point.x
+
+                    if self.links[base_id_y] == SPECIAL_LINK.BASE:
+                        self.values[base_id_y] = point.y
 
         self.number_of_secondary_variables = len(self.links) - self.number_of_primary_varialbes
 
@@ -208,6 +223,10 @@ class Solver:
 
         self.process_constraints_that_could_be_solved_by_substitution()
         self.inactive_constraints = self.detect_inactive_constraints()
+
+        self.constraints.inactive_constraints = len(self.inactive_constraints)
+        self.constraints.solved_by_substitution_constraints = len(list(filter(lambda i: i.type in (CONSTRAINT_TYPES.COINCIDENCE, CONSTRAINT_TYPES.VERTICALITY, CONSTRAINT_TYPES.HORIZONTALITY), self.constraints)))
+        self.constraints.fixed_constraints = len(list(filter(lambda i: i.type == CONSTRAINT_TYPES.FIXED, self.constraints)))
 
         initial_guess = self.geometry_to_vars()
 
