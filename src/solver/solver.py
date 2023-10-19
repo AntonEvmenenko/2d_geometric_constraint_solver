@@ -50,7 +50,7 @@ class Solver:
             link = SPECIAL_LINK.BASE
             for point in constraint.entities:
                 id = self.point_to_id[point] * 2 + (1 if type == CONSTRAINT_TYPE.HORIZONTALITY else 0)
-                if self.links[id] != SPECIAL_LINK.BASE and link == SPECIAL_LINK.BASE:
+                if self.links[id] != SPECIAL_LINK.BASE:
                     link = self.links[id]
                     break
 

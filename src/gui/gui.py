@@ -9,6 +9,8 @@ from math import atan2, degrees, pi
 from geometric_primitives.arc import Arc, distance_p2a
 from gui.constraint_icon import ConstraintIcon
 
+WINDOW_SIZE = (840, 440)
+
 USER_SELECTING_RADUIS   = 10
 
 BUTTON_ICON_SIZE        = 32
@@ -34,7 +36,7 @@ class GUI(tk.Frame):
         self.constraints: Constraints = constraints
         self.constraints_changed_callback = constraints_changed_callback
 
-        self.canvas = tk.Canvas(self, width=640, height=480, background='white', bd=0, highlightthickness=0)
+        self.canvas = tk.Canvas(self, width=WINDOW_SIZE[0], height=WINDOW_SIZE[1], background='white', bd=0, highlightthickness=0)
         self.canvas.grid(row=0, column=0, sticky="nsew")
 
         self.entity_to_drawn_entity = {}
@@ -73,7 +75,7 @@ class GUI(tk.Frame):
     def set_text_info(self, text):
         self.text_info.config(text = text)
         self.update()
-        self.text_info.place(x = self.winfo_width() - self.text_info.winfo_width() - TEXT_SIDE_OFFSET, y = self.winfo_height() - self.text_info.winfo_height() - TEXT_BOTTOM_OFFSET)
+        self.text_info.place(x = TEXT_SIDE_OFFSET, y = self.winfo_height() - self.text_info.winfo_height() - TEXT_BOTTOM_OFFSET)
 
     def create_top_menu(self):
         menubar = tk.Menu(self.root)
