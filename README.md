@@ -6,6 +6,8 @@ This project is an attempt to utilize [mathematical optimization algorithms](htt
 
 Currently, the project is not stable and mature enough to be considered seriously, but you can still experiment with it.
 
+Here you can find more information on how it works: https://vmnnk.com/en/2023-10-18/2d-geometric-constraint-solver
+
 ## How to run
 
 ```
