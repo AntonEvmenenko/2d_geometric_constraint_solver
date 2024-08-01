@@ -137,7 +137,7 @@ class GUI(tk.Frame):
             CONSTRAINT_TYPE.VERTICALITY:            "verticality",
             CONSTRAINT_TYPE.TANGENCY:               "tangency",
             CONSTRAINT_TYPE.CONCENTRICITY:          "concentricity",
-            # CONSTRAINT_TYPE.LENGTH:                 "length",
+            CONSTRAINT_TYPE.LENGTH:                 "length",
         }
 
         for icon_size in icon_sizes:

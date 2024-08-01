@@ -3,6 +3,7 @@ from constraints.constraints import Constraints
 from geometry import Geometry
 from gui.gui import GUI
 from solver.solver import Solver
+from examples.examples import examples
 
 def geometry_changed_by_GUI(active_point):
     global solver
@@ -28,5 +29,6 @@ root_widget.title('2D Geometric Constraint Solver')
 
 gui = GUI(root_widget, geometry, geometry_changed_by_GUI, constraints, constraints_changed_by_GUI)
 gui.pack(fill="both", expand=True)
+gui.load_example(examples[4])
 
 root_widget.mainloop()

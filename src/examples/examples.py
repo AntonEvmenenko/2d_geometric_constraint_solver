@@ -106,9 +106,30 @@ def Rect(geometry, constraints):
         Constraint([geometry.segments[3].p2, geometry.segments[0].p1], CONSTRAINT_TYPE.COINCIDENCE),
     ]
 
+def LengthConstraint(geometry, constraints):
+    clear_geometry_and_constraints(geometry, constraints)
+
+    geometry.segments = [
+        Segment(Point(100 * SCALE, 300 * SCALE), Point(200 * SCALE, 300 * SCALE)),
+        Segment(Point(200 * SCALE, 300 * SCALE), Point(400 * SCALE, 300 * SCALE)),
+        Segment(Point(400 * SCALE, 300 * SCALE), Point(500 * SCALE, 300 * SCALE)),
+    ]
+
+    constraints += [
+        Constraint([geometry.segments[0].p1], CONSTRAINT_TYPE.FIXED),
+
+        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPE.COINCIDENCE),
+
+        Constraint([geometry.segments[0], 100], CONSTRAINT_TYPE.LENGTH),
+        Constraint([geometry.segments[1], 200], CONSTRAINT_TYPE.LENGTH),
+        Constraint([geometry.segments[2], 100], CONSTRAINT_TYPE.LENGTH),   
+    ]
+
 examples = [
     Lines,
     CutSlot,
     Slot,
     Rect,
+    LengthConstraint,
 ]
