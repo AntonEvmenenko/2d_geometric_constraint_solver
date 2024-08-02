@@ -17,7 +17,7 @@ python src/main.py
 
 ## How to use
 
-1. Move around canvas by dragging while holding mouse wheel button
+1. Move around the canvas by holding down the mouse wheel button and dragging
 1. Use the buttons on the left to add a new segment or an arc. You can also use hotkeys ('s' for segment, 'a' for arc)
 1. Left click the point/segment/arc to select it. Click on an empty space to clear the selection
 1. The available constraints are automatically displayed for the selected items. Left click the constraint button on the right to apply the constraint
