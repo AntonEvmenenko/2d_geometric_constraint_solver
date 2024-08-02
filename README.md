@@ -17,9 +17,10 @@ python src/main.py
 
 ## How to use
 
+1. Move around canvas by dragging while holding mouse wheel button
 1. Use the buttons on the left to add a new segment or an arc. You can also use hotkeys ('s' for segment, 'a' for arc)
-2. Left click the point/segment/arc to select it. Click on an empty space to clear the selection
-3. The available constraints are automatically displayed for the selected items. Left click the constraint button on the right to apply the constraint
-4. To delete a segment or an arc, select it and press DELETE
-5. To remove a constraint, left click its icon and press DELETE
-6. Press 'i' to print some debug information
+1. Left click the point/segment/arc to select it. Click on an empty space to clear the selection
+1. The available constraints are automatically displayed for the selected items. Left click the constraint button on the right to apply the constraint
+1. To delete a segment or an arc, select it and press DELETE
+1. To remove a constraint, left click its icon and press DELETE
+1. Press 'i' to print some debug information
