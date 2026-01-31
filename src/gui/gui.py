@@ -58,6 +58,8 @@ class GUI(tk.Frame):
         # could be Segment, Arc, Point or Constraint
         self.selected_entities = set()
 
+        self.zoom_scale = 1.0
+
         self.create_text_hint()
         self.create_text_info()
         self.create_side_menus()
@@ -128,11 +130,11 @@ class GUI(tk.Frame):
 
         # linux scroll
         # TODO: check if we really need it
-        # self.canvas.bind("<Button-4>", self.on_zoom_in)
-        # self.canvas.bind("<Button-5>", self.on_zoom_out)
+        self.canvas.bind("<Button-4>", self.on_zoom)
+        self.canvas.bind("<Button-5>", self.on_zoom)
 
         # windows zoom
-        # self.canvas.bind("<MouseWheel>",self.on_zoom)
+        self.canvas.bind("<MouseWheel>",self.on_zoom)
         
         # resize of the main window
         self.bind("<Configure>", self.on_resize)
@@ -205,7 +207,8 @@ class GUI(tk.Frame):
         }.get(event.keysym, lambda : None)()
 
     def on_left_button_pressed(self, event):
-        cursor = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
+        canvas_cursor = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
+        cursor = self.to_world(canvas_cursor)
         
         if self.adding_segment or self.adding_arc:
             self.points_for_new_geometry.append(cursor)
@@ -285,7 +288,8 @@ class GUI(tk.Frame):
 
         self.selected_point_moved = True
 
-        cursor = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
+        canvas_cursor = Point(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
+        cursor = self.to_world(canvas_cursor)
 
         self.selected_point.x, self.selected_point.y = cursor.x, cursor.y
 
@@ -300,16 +304,30 @@ class GUI(tk.Frame):
     def on_middle_mouse_button_move(self, event):
         self.canvas.scan_dragto(event.x, event.y, gain=1)
 
-    # def on_zoom(self,event):
-    #     factor = 1.1 if (event.delta > 0) else 0.9
-    #     x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
-    #     self.canvas.scale("all", x, y, factor, factor)
+    def on_zoom(self, event):
+        if event.num == 5 or event.delta < 0:
+            factor = 0.9
+        else:
+            factor = 1.1
 
-    # def on_zoom_in(self,event):
-    #     self.canvas.scale("all", event.x, event.y, 1.1, 1.1)
-        
-    # def on_zoom_out(self,event):
-    #     self.canvas.scale("all", event.x, event.y, 0.9, 0.9)
+        x = self.canvas.canvasx(event.x)
+        y = self.canvas.canvasy(event.y)
+
+        self.zoom_scale *= factor
+
+        shift_x = x * (factor - 1)
+        shift_y = y * (factor - 1)
+
+        self.canvas.scan_mark(0, 0)
+        self.canvas.scan_dragto(int(-shift_x), int(-shift_y), gain=1)
+
+        self.redraw_geometry()
+
+    def to_screen(self, p):
+        return Point(p.x * self.zoom_scale, p.y * self.zoom_scale)
+
+    def to_world(self, p):
+        return Point(p.x / self.zoom_scale, p.y / self.zoom_scale)
 
     # external events handlers
 
@@ -432,7 +450,10 @@ class GUI(tk.Frame):
         # segments and arcs
         for entity in (self.geometry.segments + self.geometry.arcs):
             for point in entity.points():
-                self.canvas.coords(self.entity_to_drawn_entity[point], point.x - POINT_RADIUS, point.y - POINT_RADIUS, point.x + POINT_RADIUS, point.y + POINT_RADIUS)
+                screen_p = self.to_screen(point)
+                self.canvas.coords(self.entity_to_drawn_entity[point], 
+                                   screen_p.x - POINT_RADIUS, screen_p.y - POINT_RADIUS, 
+                                   screen_p.x + POINT_RADIUS, screen_p.y + POINT_RADIUS)
                 self.canvas.itemconfig(self.entity_to_drawn_entity[point], fill='blue', outline='blue')
 
             line_color = "red" if entity in self.selected_entities else "black"
@@ -442,11 +463,16 @@ class GUI(tk.Frame):
 
         # segments
         for segment in self.geometry.segments:
-            self.canvas.coords(self.entity_to_drawn_entity[segment], segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y)
+            p1_s = self.to_screen(segment.p1)
+            p2_s = self.to_screen(segment.p2)
+            self.canvas.coords(self.entity_to_drawn_entity[segment], p1_s.x, p1_s.y, p2_s.x, p2_s.y)
 
         # arcs
         for arc in self.geometry.arcs:
-            self.canvas.coords(self.entity_to_drawn_entity[arc], arc.bb_coords())
+            bb = arc.bb_coords()
+            scaled_bb = (bb[0] * self.zoom_scale, bb[1] * self.zoom_scale, 
+                         bb[2] * self.zoom_scale, bb[3] * self.zoom_scale)
+            self.canvas.coords(self.entity_to_drawn_entity[arc], *scaled_bb)
             start, extent = self.calculate_arc_start_and_extent(arc)
             self.canvas.itemconfig(self.entity_to_drawn_entity[arc], start = start, extent = extent)
 
@@ -520,11 +546,14 @@ class GUI(tk.Frame):
 
                 p1_p2 = Vector.from_two_points(entity.p1, entity.p2)
                 p1_p2_unit = p1_p2.normalized()
-                center_point = entity.p1 + p1_p2 / 2
+
+                center_point_world = entity.p1 + p1_p2 / 2
+                center_point_screen = self.to_screen(center_point_world)
+
                 n = Vector(p1_p2_unit.y, -p1_p2_unit.x)
 
                 for i, drawn_icon in enumerate(drawn_icons):
-                    drawn_icon.moveto(center_point + n * normal_spacing + p1_p2_unit * (-tangent_offset) + p1_p2_unit * (i * tangent_spacing))
+                    drawn_icon.moveto(center_point_screen + n * normal_spacing + p1_p2_unit * (-tangent_offset) + p1_p2_unit * (i * tangent_spacing))
 
             elif isinstance(entity, Arc):
                 center = entity.center()
@@ -533,11 +562,14 @@ class GUI(tk.Frame):
 
                 c_m_unit = Vector.from_two_points(center, middle).normalized()
 
-                delta_angle = tangent_spacing / (radius + normal_spacing)
+                radius_screen = radius * self.zoom_scale
+                center_screen = self.to_screen(center)
+
+                delta_angle = tangent_spacing / (radius_screen + normal_spacing)
                 angle_offset = max(delta_angle * (len(drawn_icons) - 1), 0) / 2
 
                 for i, drawn_icon in enumerate(drawn_icons):
-                    drawn_icon.moveto(center + (c_m_unit * (radius + normal_spacing)).rotated(-angle_offset + delta_angle * i))
+                    drawn_icon.moveto(center_screen + (c_m_unit * (radius_screen + normal_spacing)).rotated(-angle_offset + delta_angle * i))
 
         # constraint icons for points
         for entity in (self.geometry.segments + self.geometry.arcs):
@@ -552,14 +584,16 @@ class GUI(tk.Frame):
                 icons_in_first_layer = 5
                 first_layer_radius = CONSTRAINT_ICON_SPACING
                 layer = 0
-
                 # number of icons in all layers from 0 to layer
                 def helper(icons_in_first_layer, layer):
                     return (icons_in_first_layer * (layer + 2) * (layer + 1)) // 2
 
                 offset = Vector(0, first_layer_radius)
+
+                point_screen = self.to_screen(point)
+
                 for i, drawn_icon in enumerate(drawn_icons):
-                    drawn_icon.moveto(point + offset)
+                    drawn_icon.moveto(point_screen + offset)
                     offset = offset.rotated(2 * pi / ((layer + 1) * icons_in_first_layer))
                     if (i > helper(icons_in_first_layer, layer) - 2):
                         layer += 1
