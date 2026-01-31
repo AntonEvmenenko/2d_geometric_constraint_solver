@@ -9,8 +9,8 @@ from geometric_primitives.point import Point, distance_p2p
 from geometric_primitives.segment import Segment
 
 class SOLVER_TYPE(Enum):
-    SLSQP   = auto()
-    IPOPT   = auto()
+    SLSQP   = 0
+    IPOPT   = 1
 
 class SPECIAL_LINK(Enum):
     BASE    = -1
@@ -30,6 +30,12 @@ class Solver:
         self.solver_type = SOLVER_TYPE.IPOPT
 
         self.degrees_of_freedom = 0
+
+        self.is_solving = False
+
+    def set_solver_type(self, solver_type):
+        # print(f"Solver switched to: {solver_type.name}")
+        self.solver_type = solver_type
 
     def get_base_id(self, id):
         temp = self.links[id]
@@ -220,6 +226,9 @@ class Solver:
         return inactive_constraints
 
     def solve(self, active_point):
+        if self.is_solving:
+            return
+
         self.active_point = active_point
         self.active_point_copy = copy(active_point)
 
@@ -241,11 +250,15 @@ class Solver:
 
         solution = None
 
+        self.is_solving = True
+
         if self.solver_type == SOLVER_TYPE.SLSQP:
             solution = minimize(self.f, initial_guess, method = 'SLSQP', constraints = {'type' : 'eq', 'fun': self.c}, options = {'eps' : 1e-05})
             # print (solution)
         elif self.solver_type == SOLVER_TYPE.IPOPT:
             solution = casadi_minimize(self.f, initial_guess, constraints = {'type': 'eq', 'fun': self.c}, options = {'maxiter': 100, 'disp': False})
             self.geometry_from_vars(solution.x)
+
+        self.is_solving = False
 
         self.geometry_changed_callback()

@@ -9,6 +9,7 @@ from geometric_primitives.segment import Segment, distance_p2s
 from math import atan2, degrees, pi
 from geometric_primitives.arc import Arc, distance_p2a
 from gui.constraint_icon import ConstraintIcon
+from solver.solver import SOLVER_TYPE
 
 WINDOW_SIZE = (840, 440)
 
@@ -26,7 +27,7 @@ MENU_SIDE_OFFSET        = 10
 
 
 class GUI(tk.Frame):
-    def __init__(self, root, geometry: Geometry, geometry_changed_callback, constraints, constraints_changed_callback):
+    def __init__(self, root, geometry: Geometry, geometry_changed_callback, constraints, constraints_changed_callback, solver):
         tk.Frame.__init__(self, root)
 
         self.root = root
@@ -36,6 +37,8 @@ class GUI(tk.Frame):
 
         self.constraints: Constraints = constraints
         self.constraints_changed_callback = constraints_changed_callback
+
+        self.solver = solver
 
         self.canvas = tk.Canvas(self, width=WINDOW_SIZE[0], height=WINDOW_SIZE[1], background='white', bd=0, highlightthickness=0)
         self.canvas.grid(row=0, column=0, sticky="nsew")
@@ -78,6 +81,11 @@ class GUI(tk.Frame):
         self.update()
         self.text_info.place(x = TEXT_SIDE_OFFSET, y = self.winfo_height() - self.text_info.winfo_height() - TEXT_BOTTOM_OFFSET)
 
+    def solver_changed(self):
+        selected_value = self.solver_type.get()
+        new_solver_type = SOLVER_TYPE(selected_value)
+        self.solver.set_solver_type(new_solver_type)
+
     def create_top_menu(self):
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
@@ -88,6 +96,18 @@ class GUI(tk.Frame):
         for example in examples:
             examples_menu.add_command(label=f'{example.__name__}', command=lambda example = example: self.load_example(example))
         menubar.add_cascade(label="Examples", menu=examples_menu)
+        solver_menu = tk.Menu(menubar, tearoff="off")
+        self.solver_type = tk.IntVar()
+        self.solver_type.set(self.solver.solver_type.value)
+        for s_type in SOLVER_TYPE:
+            solver_menu.add_radiobutton(
+                label=s_type.name,
+                variable=self.solver_type,
+                value=s_type.value,
+                command=self.solver_changed
+            )
+
+        menubar.add_cascade(menu=solver_menu, label="Solver")
 
     def create_side_menus(self):
         self.menu_left = tk.Frame(self)

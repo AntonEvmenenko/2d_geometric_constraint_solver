@@ -109,23 +109,51 @@ def Rect(geometry, constraints):
 def Chain(geometry, constraints):
     clear_geometry_and_constraints(geometry, constraints)
 
-    geometry.segments = [
-        Segment(Point(300 * SCALE, 300 * SCALE), Point(400 * SCALE, 300 * SCALE)),
-        Segment(Point(400 * SCALE, 300 * SCALE), Point(400 * SCALE, 200 * SCALE)),
-        Segment(Point(400 * SCALE, 200 * SCALE), Point(500 * SCALE, 200 * SCALE)),
-    ]
+    x, y = 300, 300
+    link_length = 100
+    num_links = 15
+    
+    directions = [(1, 0), (0, -1), (-1, 0), (0, 1)]
+    current_dir_idx = 0
+    
+    current_side_length = 1
+    links_placed_on_side = 0
+    sides_completed = 0
 
-    constraints += [
-        Constraint([geometry.segments[0], 100], CONSTRAINT_TYPE.LENGTH),
+    geometry.segments = []
+    
+    for i in range(num_links):
+        dx_dir, dy_dir = directions[current_dir_idx]
+        
+        dx = dx_dir * link_length
+        dy = dy_dir * link_length
+        
+        p1 = Point(x * SCALE, y * SCALE)
+        p2 = Point((x + dx) * SCALE, (y + dy) * SCALE)
+        geometry.segments.append(Segment(p1, p2))
+        
+        x += dx
+        y += dy
+        
+        links_placed_on_side += 1
+        
+        if links_placed_on_side == current_side_length:
+            current_dir_idx = (current_dir_idx + 1) % 4
+            links_placed_on_side = 0
+            sides_completed += 1
+            if sides_completed == 2:
+                current_side_length += 1
+                sides_completed = 0
 
-        Constraint([geometry.segments[0], geometry.segments[1]], CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
-        Constraint([geometry.segments[1], geometry.segments[2]], CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
+    constraints.append(Constraint([geometry.segments[0], link_length], CONSTRAINT_TYPE.LENGTH))
+    constraints.append(Constraint([geometry.segments[0].p1], CONSTRAINT_TYPE.FIXED))
 
-        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPE.COINCIDENCE),
-        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPE.COINCIDENCE),
-
-        Constraint([geometry.segments[0].p1], CONSTRAINT_TYPE.FIXED),
-    ]
+    for i in range(len(geometry.segments) - 1):
+        prev_seg = geometry.segments[i]
+        next_seg = geometry.segments[i+1]
+        
+        constraints.append(Constraint([prev_seg, next_seg], CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS))
+        constraints.append(Constraint([prev_seg.p2, next_seg.p1], CONSTRAINT_TYPE.COINCIDENCE))
 
 examples = [
     Lines,
