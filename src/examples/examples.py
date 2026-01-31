@@ -106,9 +106,31 @@ def Rect(geometry, constraints):
         Constraint([geometry.segments[3].p2, geometry.segments[0].p1], CONSTRAINT_TYPE.COINCIDENCE),
     ]
 
+def Chain(geometry, constraints):
+    clear_geometry_and_constraints(geometry, constraints)
+
+    geometry.segments = [
+        Segment(Point(300 * SCALE, 300 * SCALE), Point(400 * SCALE, 300 * SCALE)),
+        Segment(Point(400 * SCALE, 300 * SCALE), Point(400 * SCALE, 200 * SCALE)),
+        Segment(Point(400 * SCALE, 200 * SCALE), Point(500 * SCALE, 200 * SCALE)),
+    ]
+
+    constraints += [
+        Constraint([geometry.segments[0], 100], CONSTRAINT_TYPE.LENGTH),
+
+        Constraint([geometry.segments[0], geometry.segments[1]], CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
+        Constraint([geometry.segments[1], geometry.segments[2]], CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
+
+        Constraint([geometry.segments[0].p2, geometry.segments[1].p1], CONSTRAINT_TYPE.COINCIDENCE),
+        Constraint([geometry.segments[1].p2, geometry.segments[2].p1], CONSTRAINT_TYPE.COINCIDENCE),
+
+        Constraint([geometry.segments[0].p1], CONSTRAINT_TYPE.FIXED),
+    ]
+
 examples = [
     Lines,
     CutSlot,
     Slot,
     Rect,
+    Chain,
 ]

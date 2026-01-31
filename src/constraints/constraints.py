@@ -16,7 +16,7 @@ class CONSTRAINT_TYPE(Enum):
     VERTICALITY             = auto()
     TANGENCY                = auto()
     CONCENTRICITY           = auto()
-    # LENGTH                  = auto()
+    LENGTH                  = auto()
 
 class QUANTITY(Enum):
     ONE             = auto()
@@ -34,7 +34,7 @@ CONSTRAINT_REQUIREMENT = {
     CONSTRAINT_TYPE.VERTICALITY:                [[Point, Point]],
     CONSTRAINT_TYPE.TANGENCY:                   [[Arc, Segment], [Arc, Arc]],
     CONSTRAINT_TYPE.CONCENTRICITY:              [[Arc, Arc]],
-    # CONSTRAINT_TYPE.LENGTH:                     [],
+    CONSTRAINT_TYPE.LENGTH:                     [[Segment]],
 }
 
 SPLITTABLE_CONSTRAINTS = [
@@ -57,7 +57,7 @@ CONSTRAINT_FUNCTION = {
     CONSTRAINT_TYPE.VERTICALITY:               None,
     CONSTRAINT_TYPE.TANGENCY:                  tangency,
     CONSTRAINT_TYPE.CONCENTRICITY:             concentricity,
-    # CONSTRAINT_TYPE.LENGTH:                    length,
+    CONSTRAINT_TYPE.LENGTH:                    length,
 }
 
 class Constraints(list):

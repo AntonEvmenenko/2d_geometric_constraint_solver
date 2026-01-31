@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.simpledialog
 from constraints.constraint import Constraint
 from constraints.constraints import *
 from examples.examples import examples
@@ -137,7 +138,7 @@ class GUI(tk.Frame):
             CONSTRAINT_TYPE.VERTICALITY:            "verticality",
             CONSTRAINT_TYPE.TANGENCY:               "tangency",
             CONSTRAINT_TYPE.CONCENTRICITY:          "concentricity",
-            # CONSTRAINT_TYPE.LENGTH:                 "length",
+            CONSTRAINT_TYPE.LENGTH:                 "length",
         }
 
         for icon_size in icon_sizes:
@@ -170,6 +171,7 @@ class GUI(tk.Frame):
             CONSTRAINT_TYPE.HORIZONTALITY:             create_menu_right_constraint_button(6, CONSTRAINT_TYPE.HORIZONTALITY),
             CONSTRAINT_TYPE.TANGENCY:                  create_menu_right_constraint_button(7, CONSTRAINT_TYPE.TANGENCY),
             CONSTRAINT_TYPE.CONCENTRICITY:             create_menu_right_constraint_button(8, CONSTRAINT_TYPE.CONCENTRICITY),
+            CONSTRAINT_TYPE.LENGTH:                    create_menu_right_constraint_button(8, CONSTRAINT_TYPE.LENGTH),
         }
 
     # mouse and keyboard handlers
@@ -316,9 +318,15 @@ class GUI(tk.Frame):
         self.adding_arc = True
 
     def on_add_constraint_button_clicked(self, constraint_type):
-        self.add_constraint(Constraint(list(self.selected_entities), constraint_type))
+        if constraint_type == CONSTRAINT_TYPE.LENGTH:
+            new_length = tkinter.simpledialog.askinteger("Input", "Enter the length", parent=self.root)
+            if not new_length is None:
+                self.add_constraint(Constraint([list(self.selected_entities)[0], new_length], constraint_type))
+        else:
+            self.add_constraint(Constraint(list(self.selected_entities), constraint_type))
 
         self.selected_entities.clear()
+        self.check_constraints_requirements()
         self.constraints_changed_callback()
 
     # elements drawing (geometry)
@@ -442,7 +450,8 @@ class GUI(tk.Frame):
         for entity in (self.geometry.segments + self.geometry.arcs):
             if entity in constraint.entities:
                 if not (entity, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
-                    self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type], CONSTRAINT_ICON_SIZE)
+                    icon = constraint.entities[1] if constraint.type == CONSTRAINT_TYPE.LENGTH else self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type]
+                    self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, icon, CONSTRAINT_ICON_SIZE)
 
             for point in entity.points():
                 if point in constraint.entities:
