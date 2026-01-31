@@ -1,4 +1,4 @@
-from math import cos, sin, sqrt
+import numpy as np
 
 def dot(v1, v2):
     return v1.x * v2.x + v1.y * v2.y
@@ -28,13 +28,13 @@ class Vector:
         return Vector(self.x / k, self.y / k)
 
     def length(self):
-        return sqrt(self.x ** 2 + self.y ** 2)
+        return np.sqrt(self.x ** 2 + self.y ** 2)
 
     def normalized(self):
         return self / self.length()
 
     def rotated(self, angle):
-        return Vector(cos(angle) * self.x - sin(angle) * self.y, sin(angle) * self.x + cos(angle) * self.y)
+        return Vector(np.cos(angle) * self.x - np.sin(angle) * self.y, np.sin(angle) * self.x + np.cos(angle) * self.y)
 
     # for left-handed coordinate system
     def rotated90ccw(self):

@@ -1,3 +1,4 @@
+from geometric_primitives.common import EPS_GEOMETRY
 from geometric_primitives.point import Point
 from geometric_primitives.vector import Vector
 
@@ -27,8 +28,9 @@ def intersection_line_line(l1, l2):
     dx = l1.c * l2.b - l1.b * l2.c
     dy = l1.a * l2.c - l1.c * l2.a
 
-    if abs(d) < 1e-5:
-        return None
+    # TODO CasADi doesn't support that, find a workaround
+    # if abs(d) < EPS_GEOMETRY:
+    #     return None
 
     return Point(dx / d, dy / d)
 

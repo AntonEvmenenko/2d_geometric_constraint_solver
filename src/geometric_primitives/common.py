@@ -1,6 +1,8 @@
 from math import atan2, pi
 from geometric_primitives.vector import cross, dot
 
+EPS_GEOMETRY = 1e-5
+
 def angle_to_0_2pi(angle):
     if angle < 0:
         return angle + 2 * pi
@@ -12,5 +14,5 @@ def angle_to_0_2pi(angle):
 def v2v_angle_cw(a, b):
     return angle_to_0_2pi(atan2(cross(a, b), dot(a, b)))
 
-def equal_eps(a, b, eps = 1e-5):
+def equal_eps(a, b, eps = EPS_GEOMETRY):
     return abs(a - b) < eps

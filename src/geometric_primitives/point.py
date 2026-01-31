@@ -1,4 +1,4 @@
-import math
+import numpy as np
 
 class Point:
     def __init__(self, x, y):
@@ -9,4 +9,4 @@ class Point:
         return Point(self.x + other.x, self.y + other.y)
 
 def distance_p2p(p1: Point, p2: Point):
-    return math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)
+    return np.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)

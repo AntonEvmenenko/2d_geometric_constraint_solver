@@ -1,6 +1,7 @@
 from enum import Enum, auto
 import itertools
 from scipy.optimize import minimize
+from solver.casadi_wrapper import casadi_minimize
 from copy import copy
 from constraints.constraints import CONSTRAINT_FUNCTION, CONSTRAINT_TYPE, Constraints
 from geometry import Geometry
@@ -26,7 +27,7 @@ class Solver:
 
         self.constraints: Constraints = constraints
 
-        self.solver_type = SOLVER_TYPE.SLSQP
+        self.solver_type = SOLVER_TYPE.IPOPT
 
         self.degrees_of_freedom = 0
 
@@ -166,7 +167,7 @@ class Solver:
         result = 0
 
         if not self.active_point is None:
-            result = distance_p2p(self.active_point, self.active_point_copy)
+            result = distance_p2p(self.active_point, self.active_point_copy) ** 2
 
         # print (f'f: {result}')
 
@@ -191,6 +192,7 @@ class Solver:
 
         # print (f'x: {x}')
         # print (f'c [{len(f)}]: {f}')
+        # print (f'f: {f}')
 
         return f
 
@@ -243,6 +245,7 @@ class Solver:
             solution = minimize(self.f, initial_guess, method = 'SLSQP', constraints = {'type' : 'eq', 'fun': self.c}, options = {'eps' : 1e-05})
             # print (solution)
         elif self.solver_type == SOLVER_TYPE.IPOPT:
-            pass
+            solution = casadi_minimize(self.f, initial_guess, constraints = {'type': 'eq', 'fun': self.c}, options = {'maxiter': 100, 'disp': False})
+            self.geometry_from_vars(solution.x)
 
         self.geometry_changed_callback()

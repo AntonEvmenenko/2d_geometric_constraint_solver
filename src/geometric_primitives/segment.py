@@ -1,3 +1,4 @@
+from geometric_primitives.common import EPS_GEOMETRY
 from geometric_primitives.point import Point, distance_p2p
 from geometric_primitives.vector import Vector, cross, dot
 
@@ -23,7 +24,7 @@ class Segment:
         a = cross(p1_p, self.vector()) / self.vector().length()
         b = between(self.p1.x, self.p2.x, p.x) and between(self.p1.y, self.p2.y, p.y)
 
-        return abs(a) < 1e-5 and b
+        return abs(a) < EPS_GEOMETRY and b
 
 def distance_p2s(p: Point, s: Segment):
     p1_p2 = s.vector()
