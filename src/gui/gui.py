@@ -245,7 +245,7 @@ class GUI(tk.Frame):
             return
 
         for (_, constraint), drawn_constraint_icon in self.entity_and_constraint_to_drawn_constraint_icon.items():
-            if cursor in drawn_constraint_icon:
+            if self.to_screen(cursor) in drawn_constraint_icon:
                 self.selected_entities.clear()
                 self.selected_entities.add(constraint)
                 self.redraw_geometry()
@@ -638,7 +638,10 @@ class GUI(tk.Frame):
         for button in self.constraint_button.values():
             button.configure(state = tk.DISABLED)
 
-        for constraint_type in Constraints.get_available_constraints(self.selected_entities):
+        # GUI can provide one numeric entity, like dimension. we need to take that into account
+        available_constraints = Constraints.get_available_constraints(self.selected_entities) | Constraints.get_available_constraints(self.selected_entities | {int()})
+
+        for constraint_type in available_constraints:
             self.constraint_button[constraint_type].configure(state = tk.NORMAL)
 
     def clear_everything(self):
