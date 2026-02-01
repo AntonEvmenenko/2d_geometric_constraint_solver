@@ -26,7 +26,7 @@ class Dimension():
     def moveto(self, segment):
         self.segment = segment
 
-        n = self.segment.vector().normalized().rotated90ccw()
+        n = self.segment.vector().normalized().rotated90cw()
 
         self.canvas.coords(self.left_extension_line, self.segment.p1.x, self.segment.p1.y, self.segment.p1.x + n.x * EXTENSION_LINE_LENGTH, self.segment.p1.y + n.y * EXTENSION_LINE_LENGTH)
         self.canvas.coords(self.right_extension_line, self.segment.p2.x, self.segment.p2.y, self.segment.p2.x + n.x * EXTENSION_LINE_LENGTH, self.segment.p2.y + n.y * EXTENSION_LINE_LENGTH)
