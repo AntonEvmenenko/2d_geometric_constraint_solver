@@ -53,8 +53,20 @@ class Solver:
         self.number_of_primary_varialbes = len(self.values)
         self.links = [SPECIAL_LINK.BASE] * self.number_of_primary_varialbes
 
+        def get_constraints_points(constraints):
+            points = []
+
+            for constraint in constraints:
+                for entity in constraint.entities:
+                    if not hasattr(entity, 'points'):
+                        continue
+                    for point in entity.points():
+                        points.append(point)
+            
+            return points
+
         def hv_helper(constraint, type):
-            constraint_points = list(itertools.chain.from_iterable([entity.points() for entity in constraint.entities]))
+            constraint_points = get_constraints_points([constraint])
 
             link = SPECIAL_LINK.BASE
             for point in constraint_points:
@@ -83,6 +95,8 @@ class Solver:
                 else:
                     self.links[id] = link
 
+        # COINCIDENCE, HORIZONTALITY and VERTICALITY constraints
+
         for constraint in self.constraints:
             if constraint.type == CONSTRAINT_TYPE.COINCIDENCE:
                 hv_helper(constraint, CONSTRAINT_TYPE.HORIZONTALITY)
@@ -94,31 +108,28 @@ class Solver:
             elif constraint.type == CONSTRAINT_TYPE.VERTICALITY:
                 hv_helper(constraint, CONSTRAINT_TYPE.VERTICALITY)
 
-        for constraint in self.constraints:
-            if constraint.type == CONSTRAINT_TYPE.FIXED:
-                for entity in constraint.entities:
-                    for point in entity.points():
-                        id = self.point_to_id[point]
-                        id_x, id_y = id * 2, id * 2 + 1
+        # FIXED constraints
 
-                        self.links[self.get_base_id(id_x)] = SPECIAL_LINK.FIXED
-                        self.links[self.get_base_id(id_y)] = SPECIAL_LINK.FIXED
+        fixed_constraints = filter(lambda constraint: constraint.type == CONSTRAINT_TYPE.FIXED, self.constraints)
 
-        for constraint in self.constraints:
-             for entity in constraint.entities:
-                if not hasattr(entity, 'points'):
-                    continue
-                for point in entity.points():
-                    if point is self.active_point:
-                        id = self.point_to_id[point]
-                        id_x, id_y = id * 2, id * 2 + 1
-                        base_id_x, base_id_y = self.get_base_id(id_x), self.get_base_id(id_y)
+        for point in get_constraints_points(fixed_constraints):
+            id = self.point_to_id[point]
+            id_x, id_y = id * 2, id * 2 + 1
 
-                        if self.links[base_id_x] == SPECIAL_LINK.BASE:
-                            self.values[base_id_x] = point.x
+            self.links[self.get_base_id(id_x)] = SPECIAL_LINK.FIXED
+            self.links[self.get_base_id(id_y)] = SPECIAL_LINK.FIXED
 
-                        if self.links[base_id_y] == SPECIAL_LINK.BASE:
-                            self.values[base_id_y] = point.y
+        for point in get_constraints_points(self.constraints):
+            if point is self.active_point:
+                id = self.point_to_id[point]
+                id_x, id_y = id * 2, id * 2 + 1
+                base_id_x, base_id_y = self.get_base_id(id_x), self.get_base_id(id_y)
+
+                if self.links[base_id_x] == SPECIAL_LINK.BASE:
+                    self.values[base_id_x] = point.x
+
+                if self.links[base_id_y] == SPECIAL_LINK.BASE:
+                    self.values[base_id_y] = point.y
 
         self.number_of_secondary_variables = len(self.links) - self.number_of_primary_varialbes
 
