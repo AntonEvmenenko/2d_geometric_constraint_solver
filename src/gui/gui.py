@@ -10,22 +10,9 @@ from geometric_primitives.segment import Segment, distance_p2s
 from math import atan2, degrees, pi
 from geometric_primitives.arc import Arc, distance_p2a
 from gui.constraint_icon import ConstraintIcon
+from gui.dimension import Dimension
 from solver.solver import SOLVER_TYPE
-
-WINDOW_SIZE = (840, 440)
-
-USER_SELECTING_RADUIS   = 10
-
-BUTTON_ICON_SIZE        = 32
-CONSTRAINT_ICON_SIZE    = 20
-CONSTRAINT_ICON_SPACING = 25
-LINE_TICKNESS           = 3
-POINT_RADIUS            = 4
-TEXT_BOTTOM_OFFSET      = 15
-TEXT_SIDE_OFFSET        = 15
-MENU_TOP_OFFSET         = 10
-MENU_SIDE_OFFSET        = 10
-
+from gui.config import *
 
 class GUI(tk.Frame):
     def __init__(self, root, geometry: Geometry, geometry_changed_callback, constraints, constraints_changed_callback, solver):
@@ -461,7 +448,7 @@ class GUI(tk.Frame):
             self.remove_drawn_entity(entity)
 
     def redraw_geometry(self):
-        # segments and arcs
+        # points
         for entity in (self.geometry.segments + self.geometry.arcs):
             for point in entity.points():
                 screen_p = self.to_screen(point)
@@ -470,10 +457,11 @@ class GUI(tk.Frame):
                                    screen_p.x + POINT_RADIUS, screen_p.y + POINT_RADIUS)
                 self.canvas.itemconfig(self.entity_to_drawn_entity[point], fill='blue', outline='blue')
 
-            line_color = "red" if entity in self.selected_entities else "black"
-            self.canvas.itemconfig(self.entity_to_drawn_entity[entity], fill=line_color)
-            if isinstance(entity, Arc):
-                self.canvas.itemconfig(self.entity_to_drawn_entity[entity], outline=line_color)
+        # selected points
+        for selected_point in [entity for entity in self.selected_entities if isinstance(entity, Point)]:
+            circle = self.entity_to_drawn_entity[selected_point]
+            self.canvas.itemconfig(circle, fill='red', outline='red')
+            self.canvas.tag_raise(circle)
 
         # segments
         for segment in self.geometry.segments:
@@ -490,18 +478,16 @@ class GUI(tk.Frame):
             start, extent = self.calculate_arc_start_and_extent(arc)
             self.canvas.itemconfig(self.entity_to_drawn_entity[arc], start = start, extent = extent)
 
-        # selected points
-        for selected_point in [entity for entity in self.selected_entities if isinstance(entity, Point)]:
-            circle = self.entity_to_drawn_entity[selected_point]
-            self.canvas.itemconfig(circle, fill='red', outline='red')
-            self.canvas.tag_raise(circle)
+        # selected segments and arcs
+        for entity in (self.geometry.segments + self.geometry.arcs):
+            line_color = "red" if entity in self.selected_entities else "black"
+            self.canvas.itemconfig(self.entity_to_drawn_entity[entity], fill=line_color)
+            if isinstance(entity, Arc):
+                self.canvas.itemconfig(self.entity_to_drawn_entity[entity], outline=line_color)
 
         # constraint icons
-        for (_, constraint), drawn_constraint_icon in self.entity_and_constraint_to_drawn_constraint_icon.items():
-            color = "red" if constraint in self.selected_entities else "pale green"
-            drawn_constraint_icon.set_background_color(color)
-
         self.update_constraint_icons()
+
         self.set_text_info(f'e: {len(self.geometry.segments) + len(self.geometry.arcs)} | c: {len(self.constraints)} | d: {self.degrees_of_freedom}')
 
     # elements drawing (constraints)
@@ -510,8 +496,10 @@ class GUI(tk.Frame):
         for entity in (self.geometry.segments + self.geometry.arcs):
             if entity in constraint.entities:
                 if not (entity, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
-                    icon = constraint.entities[1] if constraint.type == CONSTRAINT_TYPE.LENGTH else self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type]
-                    self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, icon, CONSTRAINT_ICON_SIZE)
+                    if constraint.type == CONSTRAINT_TYPE.LENGTH:
+                        self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = Dimension(self.canvas, constraint.entities[1])
+                    else:
+                        self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type], CONSTRAINT_ICON_SIZE)
 
             for point in entity.points():
                 if point in constraint.entities:
@@ -544,6 +532,10 @@ class GUI(tk.Frame):
             self.remove_constraint_icon(constraint)
 
     def update_constraint_icons(self):
+        # constraint icon colors
+        for (_, constraint), drawn_constraint_icon in self.entity_and_constraint_to_drawn_constraint_icon.items():
+            drawn_constraint_icon.set_selected(constraint in self.selected_entities)
+
         # constraint icons for segments and arcs
         for entity in (self.geometry.segments + self.geometry.arcs):
             drawn_icons = []
@@ -567,7 +559,10 @@ class GUI(tk.Frame):
                 n = Vector(p1_p2_unit.y, -p1_p2_unit.x)
 
                 for i, drawn_icon in enumerate(drawn_icons):
-                    drawn_icon.moveto(center_point_screen + n * normal_spacing + p1_p2_unit * (-tangent_offset) + p1_p2_unit * (i * tangent_spacing))
+                    if isinstance(drawn_icon, ConstraintIcon):
+                        drawn_icon.moveto(center_point_screen + n * normal_spacing + p1_p2_unit * (-tangent_offset) + p1_p2_unit * (i * tangent_spacing))
+                    elif isinstance(drawn_icon, Dimension):
+                        drawn_icon.moveto(Segment(self.to_screen(entity.p1), self.to_screen(entity.p2)))
 
             elif isinstance(entity, Arc):
                 center = entity.center()

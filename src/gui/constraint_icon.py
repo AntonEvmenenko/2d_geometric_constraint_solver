@@ -32,7 +32,8 @@ class ConstraintIcon():
         self.canvas.moveto(self.background, int(point.x - self.icon_width // 2 - 1), int(point.y - self.icon_height // 2 - 1))
         self.canvas.moveto(self.icon, int(point.x - self.icon_width // 2), int(point.y - self.icon_height // 2))
 
-    def set_background_color(self, color="pale green"):
+    def set_selected(self, selected):
+        color = "red" if selected else "pale green"
         self.canvas.itemconfig(self.background, fill = color)
 
     def create_rounded_rectangle(self, x1, y1, x2, y2, r = 10, **kwargs):
