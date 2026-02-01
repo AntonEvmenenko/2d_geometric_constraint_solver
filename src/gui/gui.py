@@ -11,6 +11,7 @@ from math import atan2, degrees, pi
 from geometric_primitives.arc import Arc, distance_p2a
 from gui.constraint_icon import ConstraintIcon
 from gui.segment_dimension import SegmentDimension
+from gui.arc_dimension import ArcDimension
 from solver.solver import SOLVER_TYPE
 from gui.config import *
 
@@ -497,7 +498,10 @@ class GUI(tk.Frame):
             if entity in constraint.entities:
                 if not (entity, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
                     if constraint.type == CONSTRAINT_TYPE.LENGTH:
-                        self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = SegmentDimension(self.canvas, constraint.entities[1])
+                        if isinstance(constraint.entities[0], Segment):
+                            self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = SegmentDimension(self.canvas, constraint.entities[1])
+                        elif isinstance(constraint.entities[0], Arc):
+                            self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ArcDimension(self.canvas, constraint.entities[1])
                     else:
                         self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type], CONSTRAINT_ICON_SIZE)
 
@@ -578,7 +582,10 @@ class GUI(tk.Frame):
                 angle_offset = max(delta_angle * (len(drawn_icons) - 1), 0) / 2
 
                 for i, drawn_icon in enumerate(drawn_icons):
-                    drawn_icon.moveto(center_screen + (c_m_unit * (radius_screen + normal_spacing)).rotated(-angle_offset + delta_angle * i))
+                    if isinstance(drawn_icon, ConstraintIcon):
+                        drawn_icon.moveto(center_screen + (c_m_unit * (radius_screen + normal_spacing)).rotated(-angle_offset + delta_angle * i))
+                    elif isinstance(drawn_icon, ArcDimension):
+                        drawn_icon.moveto(Arc(self.to_screen(entity.p1), self.to_screen(entity.p2), self.to_screen(entity.middle_point())))
 
         # constraint icons for points
         for entity in (self.geometry.segments + self.geometry.arcs):

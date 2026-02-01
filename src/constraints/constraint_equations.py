@@ -27,8 +27,15 @@ def equal_length_or_radius(entity1, entity2):
     assert segments or arcs
     return [entity1.length() - entity2.length()] if segments else [entity1.radius() - entity2.radius()]
 
-def length(segment: Segment, length: float):
-    return [(Vector(segment.p2.x - segment.p1.x, segment.p2.y - segment.p1.y).length() - length)]
+def length(entity, length: float):
+    if isinstance(entity, Segment):
+        segment = entity
+        return [(Vector(segment.p2.x - segment.p1.x, segment.p2.y - segment.p1.y).length() - length)]
+    elif isinstance(entity, Arc):
+        arc = entity
+        return [arc.radius() - length]
+    else:
+        assert False
 
 def tangency(entity1, entity2):
     temp = Counter((entity1.__class__, entity2.__class__))

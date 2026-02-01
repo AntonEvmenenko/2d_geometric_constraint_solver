@@ -34,7 +34,7 @@ CONSTRAINT_REQUIREMENT = {
     CONSTRAINT_TYPE.VERTICALITY:                [[Segment], [Point, Point]],
     CONSTRAINT_TYPE.TANGENCY:                   [[Arc, Segment], [Arc, Arc]],
     CONSTRAINT_TYPE.CONCENTRICITY:              [[Arc, Arc]],
-    CONSTRAINT_TYPE.LENGTH:                     [[Segment, int]],
+    CONSTRAINT_TYPE.LENGTH:                     [[Segment, int], [Arc, int]],
 }
 
 SPLITTABLE_CONSTRAINTS = [
