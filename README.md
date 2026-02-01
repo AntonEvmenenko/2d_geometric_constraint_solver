@@ -2,12 +2,14 @@
 
 ![](./screenshots/preview1.gif)
 
-Update (January 2026):
+**Update (January 2026)**:
 
 1. Added support for the advanced [IPOPT solver](https://en.wikipedia.org/wiki/IPOPT) via [CasADi](https://web.casadi.org/). The solver type can now be selected at runtime via the menu.
 1. Added the ability to zoom the canvas using the mouse wheel scroll.
 1. Added more keyboard shortcuts and tooltips displaying them for all buttons.
 1. Added dimensions for segments and arcs.
+
+---
 
 This project is an attempt to utilize [mathematical optimization algorithms](https://en.wikipedia.org/wiki/Mathematical_optimization), specifically [SLSQP](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html), to deal with [geometric constraint solving](https://en.wikipedia.org/wiki/Geometric_constraint_solving) problem.
 
