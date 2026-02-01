@@ -10,7 +10,7 @@ from geometric_primitives.segment import Segment, distance_p2s
 from math import atan2, degrees, pi
 from geometric_primitives.arc import Arc, distance_p2a
 from gui.constraint_icon import ConstraintIcon
-from gui.dimension import Dimension
+from gui.segment_dimension import SegmentDimension
 from solver.solver import SOLVER_TYPE
 from gui.config import *
 
@@ -497,7 +497,7 @@ class GUI(tk.Frame):
             if entity in constraint.entities:
                 if not (entity, constraint) in self.entity_and_constraint_to_drawn_constraint_icon:
                     if constraint.type == CONSTRAINT_TYPE.LENGTH:
-                        self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = Dimension(self.canvas, constraint.entities[1])
+                        self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = SegmentDimension(self.canvas, constraint.entities[1])
                     else:
                         self.entity_and_constraint_to_drawn_constraint_icon[(entity, constraint)] = ConstraintIcon(self.canvas, self.constraint_icon[CONSTRAINT_ICON_SIZE][constraint.type], CONSTRAINT_ICON_SIZE)
 
@@ -561,7 +561,7 @@ class GUI(tk.Frame):
                 for i, drawn_icon in enumerate(drawn_icons):
                     if isinstance(drawn_icon, ConstraintIcon):
                         drawn_icon.moveto(center_point_screen + n * normal_spacing + p1_p2_unit * (-tangent_offset) + p1_p2_unit * (i * tangent_spacing))
-                    elif isinstance(drawn_icon, Dimension):
+                    elif isinstance(drawn_icon, SegmentDimension):
                         drawn_icon.moveto(Segment(self.to_screen(entity.p1), self.to_screen(entity.p2)))
 
             elif isinstance(entity, Arc):

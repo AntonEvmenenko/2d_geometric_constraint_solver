@@ -3,7 +3,7 @@ import tkinter as tk
 import math
 from gui.config import *
 
-class Dimension():
+class SegmentDimension():
     def __init__(self, canvas, value):
         self.canvas = canvas
         self.value = value
