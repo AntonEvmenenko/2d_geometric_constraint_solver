@@ -1,6 +1,6 @@
 # 2D Geometric Constraint Solver
 
-![](./screenshots/preview.gif)
+![](./screenshots/preview1.gif)
 
 This project is an attempt to utilize [mathematical optimization algorithms](https://en.wikipedia.org/wiki/Mathematical_optimization), specifically [SLSQP](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html), to deal with [geometric constraint solving](https://en.wikipedia.org/wiki/Geometric_constraint_solving) problem.
 
