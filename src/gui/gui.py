@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.simpledialog
+from gui.tooltip import ToolTip
 from constraints.constraint import Constraint
 from constraints.constraints import *
 from examples.examples import examples
@@ -170,30 +171,33 @@ class GUI(tk.Frame):
                 self.constraint_icon[icon_size][constraint_type] = tk.PhotoImage(file = f"icons/{icon_size}x{icon_size}/{icon_file_name[constraint_type]}.png")
 
     def create_buttons(self):
-        def create_menu_left_button(row, icon, command):
-            tk.Button(self.menu_left, image = icon, command = command, relief = tk.SOLID, bg = "light gray", activebackground = "light gray").grid(row = row, column = 1, sticky = "n", pady = 2)
+        def create_menu_left_button(row, icon, command, hint_message):
+            button = tk.Button(self.menu_left, image = icon, command = command, relief = tk.SOLID, bg = "light gray", activebackground = "light gray")
+            button.grid(row = row, column = 1, sticky = "n", pady = 2)
+            button.tooltip = ToolTip(button, hint_message, x_offset=30)
 
-        create_menu_left_button(0, self.segment_icon, self.on_add_segment_button_clicked)
-        create_menu_left_button(1, self.arc_icon, self.on_add_arc_button_clicked)
+        create_menu_left_button(0, self.segment_icon, self.on_add_segment_button_clicked, "Segment (s)")
+        create_menu_left_button(1, self.arc_icon, self.on_add_arc_button_clicked, "Arc (a)")
         # create_menu_left_button(2, self.circle_icon, None)
 
-        def create_menu_right_constraint_button(row, constraint_type):
+        def create_menu_right_constraint_button(row, constraint_type, hint_message=""):
             button = tk.Button(self.menu_right, image = self.constraint_icon[BUTTON_ICON_SIZE][constraint_type], \
                 command = lambda: self.on_add_constraint_button_clicked(constraint_type), state=tk.DISABLED, relief = tk.SOLID, bg = "light gray", activebackground = "light gray")
             button.grid(row = row, column = 1, sticky="n", pady = 2)
+            button.tooltip = ToolTip(button, hint_message, x_offset=-30)
             return button
 
         self.constraint_button = {
-            CONSTRAINT_TYPE.COINCIDENCE:               create_menu_right_constraint_button(0, CONSTRAINT_TYPE.COINCIDENCE),
-            CONSTRAINT_TYPE.FIXED:                     create_menu_right_constraint_button(1, CONSTRAINT_TYPE.FIXED),
-            CONSTRAINT_TYPE.PERPENDICULARITY:          create_menu_right_constraint_button(2, CONSTRAINT_TYPE.PERPENDICULARITY),
-            CONSTRAINT_TYPE.PARALLELITY:               create_menu_right_constraint_button(3, CONSTRAINT_TYPE.PARALLELITY),
-            CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS:    create_menu_right_constraint_button(4, CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
-            CONSTRAINT_TYPE.VERTICALITY:               create_menu_right_constraint_button(5, CONSTRAINT_TYPE.VERTICALITY),
-            CONSTRAINT_TYPE.HORIZONTALITY:             create_menu_right_constraint_button(6, CONSTRAINT_TYPE.HORIZONTALITY),
-            CONSTRAINT_TYPE.TANGENCY:                  create_menu_right_constraint_button(7, CONSTRAINT_TYPE.TANGENCY),
-            CONSTRAINT_TYPE.CONCENTRICITY:             create_menu_right_constraint_button(8, CONSTRAINT_TYPE.CONCENTRICITY),
-            CONSTRAINT_TYPE.LENGTH:                    create_menu_right_constraint_button(8, CONSTRAINT_TYPE.LENGTH),
+            CONSTRAINT_TYPE.COINCIDENCE:               create_menu_right_constraint_button(0, CONSTRAINT_TYPE.COINCIDENCE, "Coincidence (i)"),
+            CONSTRAINT_TYPE.FIXED:                     create_menu_right_constraint_button(1, CONSTRAINT_TYPE.FIXED, "Fixed (f)"),
+            CONSTRAINT_TYPE.PERPENDICULARITY:          create_menu_right_constraint_button(2, CONSTRAINT_TYPE.PERPENDICULARITY, "Perpendicularity (l)"),
+            CONSTRAINT_TYPE.PARALLELITY:               create_menu_right_constraint_button(3, CONSTRAINT_TYPE.PARALLELITY, "Parallelity (b)"),
+            CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS:    create_menu_right_constraint_button(4, CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS, "Equal (e)"),
+            CONSTRAINT_TYPE.VERTICALITY:               create_menu_right_constraint_button(5, CONSTRAINT_TYPE.VERTICALITY, "Verticality (v)"),
+            CONSTRAINT_TYPE.HORIZONTALITY:             create_menu_right_constraint_button(6, CONSTRAINT_TYPE.HORIZONTALITY, "Horizontality (h)"),
+            CONSTRAINT_TYPE.TANGENCY:                  create_menu_right_constraint_button(7, CONSTRAINT_TYPE.TANGENCY, "Tangency (t)"),
+            CONSTRAINT_TYPE.CONCENTRICITY:             create_menu_right_constraint_button(8, CONSTRAINT_TYPE.CONCENTRICITY, "Concentricity (o)"),
+            CONSTRAINT_TYPE.LENGTH:                    create_menu_right_constraint_button(8, CONSTRAINT_TYPE.LENGTH, "Length (d)"),
         }
 
     # mouse and keyboard handlers
@@ -203,7 +207,17 @@ class GUI(tk.Frame):
             'Delete': self.delete_selected_entities,
             's': self.on_add_segment_button_clicked,
             'a': self.on_add_arc_button_clicked,
-            'i': self.print_detailed_info,
+            'i': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.COINCIDENCE),
+            'f': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.FIXED),
+            'l': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.PERPENDICULARITY),
+            'b': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.PARALLELITY),
+            'e': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.EQUAL_LENGTH_OR_RADIUS),
+            'v': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.VERTICALITY),
+            'h': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.HORIZONTALITY),
+            't': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.TANGENCY),
+            'o': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.CONCENTRICITY),
+            'd': lambda: self.on_add_constraint_button_clicked(CONSTRAINT_TYPE.LENGTH),
+            'p': self.print_detailed_info,
         }.get(event.keysym, lambda : None)()
 
     def on_left_button_pressed(self, event):
